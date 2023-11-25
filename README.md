@@ -1,21 +1,18 @@
-[Metrics](#Metrics)
-- [Requirements](#Requirements)
-   - [Functional Requirements](#Functional%20Requirements)
-   - [Non-Functional Requirements](#Non-Functional%20Requirements)
-- [Architecture](#Architecture)
-   - [Iteration-1: Monolith](#Iteration-1:%20Monolith)
-		- [Which Database type?](#Which%20Database%20type?)
-			- [Our pick](#Our%20pick:%20Time-series%20Database)
-			- [Let’s dive more in the consistency aspect](#Let’s%20dive%20more%20in%20the%20consistency%20aspect)
-   - [Iteration-2: Microserivces](#Iteration-2:%20Microserivces)
-		- [Why Serverless?](#Why%20Serverless?)
-   - [Iteration-3: Event-Driven](#Iteration-3:%20Event-Driven)
-   - [Iteration-4: CQRS](#Iteration-4:%20CQRS)
-		- [How to read data effectively?](#How%20to%20read%20data%20effectively?)
-   - [Iteration-5: COTS](#Iteration-5:%20COTS)
-
 # Metrics
 A Frontend + Backend application that allows you to post and visualize metrics.
+
+## Table of Contents
+- Requirements
+   - Functional Requirements
+   - Non-Functional Requirements
+- Architecture
+   - [Iteration-1: Monolith](#iteration-1-monolith)
+   - [Iteration-2: Microserivces](#iteration-2-microserivces)
+   - [Iteration-3: Event-Driven](#iteration-3-event-driven)
+   - [Iteration-4: CQRS](#iteration-4-cqrs)
+   - [Iteration-5: COTS](#iteration-5-cots)
+ 
+------------
 
 ## Requirements
 ### Functional Requirements
