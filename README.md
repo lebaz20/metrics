@@ -26,6 +26,14 @@ A Frontend + Backend application that allows you to post and visualize metrics.
 ------------
 
 ## Architecture
+
+### Final Design
+![](https://drive.google.com/uc?id=1aEm-mb-e164g9aISS-t_khH987DvdPl0)
+#### Final design utilizing AWS services
+![](https://drive.google.com/uc?id=1ITOX3qhsgW5oF-UffAkUN-f2biSA15Lh)
+
+To understand how we got here, Following is the iterative thinking process.
+
 ### Iteration-1: Monolith
 ![](https://drive.google.com/uc?id=1QmQQNMKejtihh-PY9VIghNaOsuMGHYY_)
 
