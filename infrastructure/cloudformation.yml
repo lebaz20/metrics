@@ -1,0 +1,786 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation Template for S3, Lambda, Kinesis, Kinesis Analytics, Timestream, API Gateway, Route 53, QuickSight, and CloudFront
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: The custom domain name for metrics API
+    Default: metrics-demo.com
+  
+  VisualizationDomainName:
+    Type: String
+    Description: The custom domain name for visualization
+    Default: quicksight.metrics-demo.com
+
+  LambdaBucketName:
+    Type: String
+    Description: Name of the S3 bucket for Lambda code
+    Default: metrics-lambda-code-bucket
+
+  AssetsBucketName:
+    Type: String
+    Description: Name of the S3 bucket for Assets
+    Default: metrics-assets-bucket
+  
+  TimeStreamBucketName:
+    Type: String
+    Description: Name of the S3 bucket for TimeStream
+    Default: metrics-timestream-bucket
+
+  TimestreamDatabaseName:
+    Type: String
+    Description: Name of the Timestream database
+    Default: MetricsTimestreamDB
+  
+  TimestreamTableMemoryStoreRetentionPeriodInHours:
+    Type: Number
+    Description: Number of hours to retain table in memory
+    Default: 1
+
+  TimestreamTableStoreRetentionPeriodInDays:
+    Type: Number
+    Description: Number of days to store table
+    Default: 1
+  
+  ShouldCreateScheduledQuery:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: Create scheduled queries only when tables have data first to avoid errors
+
+Conditions:
+  ShouldCreateScheduledQuery: !Equals [!Ref ShouldCreateScheduledQuery, "true"]
+
+Resources:
+  ## API Gateway
+  MetricsApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: MetricsApiGateway
+
+  MetricsApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MetricsApiGateway
+      ParentId: !GetAtt MetricsApiGateway.RootResourceId
+      PathPart: metric
+    DependsOn: MetricsApiGateway
+
+  MetricsApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: ANY
+      ResourceId: !Ref MetricsApiGatewayResource
+      RestApiId: !Ref MetricsApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MetricsLambdaFunction.Arn}/invocations
+    DependsOn: MetricsApiGatewayResource
+
+  MetricsCertificate:
+    Type: 'AWS::CertificateManager::Certificate'
+    Properties:
+      DomainName: !Ref DomainName
+      ValidationMethod: DNS  # You may choose DNS or EMAIL validation
+      SubjectAlternativeNames:
+        - !Ref DomainName
+
+  MetricsCustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainName
+      CertificateArn: !Ref MetricsCertificate
+      EndpointConfiguration:
+        Types:
+          - REGIONAL # You may choose EDGE, REGIONAL, or PRIVATE
+    DependsOn: MetricsCertificate
+
+  MetricsApiGatewayBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref MetricsCustomDomain
+      RestApiId: !Ref MetricsApiGateway
+      Stage: prod
+    DependsOn:
+      - MetricsApiGateway
+      - MetricsCustomDomain
+
+  MetricsApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref MetricsApiGateway
+      StageName: prod
+    DependsOn:
+      - MetricsApiGateway
+      - MetricsApiGatewayMethod
+
+  MetricsRoute53RecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !GetAtt MetricsCustomDomain.RegionalHostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Select [2, !Split ["/", !GetAtt MetricsCustomDomain.DistributionDomainName]]
+        HostedZoneId: !Select [0, !Split ["/", !GetAtt MetricsCustomDomain.DistributionDomainName]]
+    DependsOn:
+      - MetricsCustomDomain
+
+  ## Assets CDN
+  MetricsAssetsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref AssetsBucketName
+
+  MetricsCloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt MetricsAssetsBucket.DomainName
+            Id: S3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        Enabled: true
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: allow-all
+        DefaultRootObject: index.html
+        ViewerCertificate:
+          AcmCertificateArn: !Ref MetricsCertificate
+          SslSupportMethod: sni-only
+    DependsOn:
+      - MetricsCertificate
+      - MetricsAssetsBucket
+
+  MetricsCloudFrontRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MetricsCloudFrontS3Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub 'arn:aws:s3:::${AssetsBucketName}/*'
+
+  ## Metrics lambda function
+  MetricsLambdaBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref LambdaBucketName
+
+  MetricsLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: MetricsLambdaFunction
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt MetricsLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaBucketName
+        S3Key: lambda-code.zip  # Replace with the actual zip file name in your S3 bucket
+      Timeout: 10
+      Environment:
+        Variables:
+          KINESIS_STREAM_ARN: !GetAtt MetricsRawKinesisStream.Arn
+    DependsOn:
+      - MetricsLambdaExecutionRole
+      - MetricsLambdaBucket
+      - MetricsRawKinesisStream
+
+  MetricsLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: MetricsLambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MetricsLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub 'arn:aws:s3:::${LambdaBucketName}/*'
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - kinesis:PutRecord
+                  - kinesis:PutRecords
+                Resource: !GetAtt MetricsRawKinesisStream.Arn
+    DependsOn:
+      - MetricsRawKinesisStream
+
+  ## TimeStream Database
+  MetricsTimeStreamBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref TimeStreamBucketName
+
+  MetricsTimestreamDatabase:
+    Type: AWS::Timestream::Database
+    Properties:
+      DatabaseName: !Ref TimestreamDatabaseName
+
+  MetricsRawTable:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TimestreamDatabaseName
+      TableName: metrics_raw
+      RetentionProperties:
+        MemoryStoreRetentionPeriodInHours: !Ref TimestreamTableMemoryStoreRetentionPeriodInHours
+        MagneticStoreRetentionPeriodInDays: !Ref TimestreamTableStoreRetentionPeriodInDays
+      Tags:
+        - Key: Environment
+          Value: Production
+    DependsOn:
+      - MetricsTimestreamDatabase
+
+  MetricsMinTable:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TimestreamDatabaseName
+      TableName: metrics_min
+      RetentionProperties:
+        MemoryStoreRetentionPeriodInHours: !Ref TimestreamTableMemoryStoreRetentionPeriodInHours
+        MagneticStoreRetentionPeriodInDays: !Ref TimestreamTableStoreRetentionPeriodInDays
+      Tags:
+        - Key: Environment
+          Value: Production
+    DependsOn:
+      - MetricsTimestreamDatabase
+
+  MetricsHrTable:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TimestreamDatabaseName
+      TableName: metrics_hr
+      RetentionProperties:
+        MemoryStoreRetentionPeriodInHours: !Ref TimestreamTableMemoryStoreRetentionPeriodInHours
+        MagneticStoreRetentionPeriodInDays: !Ref TimestreamTableStoreRetentionPeriodInDays
+      Tags:
+        - Key: Environment
+          Value: Production
+    DependsOn:
+      - MetricsTimestreamDatabase
+
+  MetricsScheduledQuerySNSTopic:
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      DisplayName: MetricsScheduledQueryTopic
+      TopicName: MetricsScheduledQueryTopic
+
+  MetricsAvgPerHourScheduledQuery:
+    Type: 'AWS::Timestream::ScheduledQuery'
+    Condition: ShouldCreateScheduledQuery
+    Properties:
+      QueryString: !Sub |
+        SELECT
+          BIN(time, 1h) AS "time",
+          "name",
+          AVG(value) AS "value"
+        FROM
+          ${TimestreamDatabaseName}.metrics_min
+        GROUP BY
+          "name", BIN(time, 1h)
+      ScheduleConfiguration:
+        ScheduleExpression: rate(60 minutes)
+      ScheduledQueryExecutionRoleArn: !GetAtt MetricsScheduledTimeStreamQueryExecutionRole.Arn
+      NotificationConfiguration:
+        SnsConfiguration:
+          TopicArn: !Ref MetricsScheduledQuerySNSTopic
+      ErrorReportConfiguration:
+        S3Configuration:
+          BucketName: !Ref TimeStreamBucketName
+      TargetConfiguration:
+        TimestreamConfiguration:
+          DatabaseName: !Ref TimestreamDatabaseName
+          TableName: metrics_day
+          TimeColumn: time
+          MultiMeasureMappings:
+            MultiMeasureAttributeMappings:
+              - MeasureValueType: DOUBLE
+                SourceColumn: value
+            TargetMultiMeasureName: value
+          DimensionMappings:
+            - Name: name
+              DimensionValueType: VARCHAR
+    DependsOn:
+      - MetricsTimestreamDatabase
+      - MetricsScheduledTimeStreamQueryExecutionRole
+      - MetricsTimeStreamBucket
+      - MetricsHrTable
+      - MetricsMinTable
+      - MetricsScheduledQuerySNSTopic
+
+  MetricsScheduledTimeStreamQueryExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: MetricsScheduledTimeStreamQueryExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: timestream.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MetricsScheduledTimeStreamQueryExecutionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - timestream:Query
+                  - timestream:Select
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketLocation
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:PutObject
+                Resource: !Sub 'arn:aws:s3:::${TimeStreamBucketName}/*'
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:*
+
+  MetricsDayTable:
+    Type: AWS::Timestream::Table
+    Properties:
+      DatabaseName: !Ref TimestreamDatabaseName
+      TableName: metrics_day
+      RetentionProperties:
+        MemoryStoreRetentionPeriodInHours: !Ref TimestreamTableMemoryStoreRetentionPeriodInHours
+        MagneticStoreRetentionPeriodInDays: !Ref TimestreamTableStoreRetentionPeriodInDays
+      Tags:
+        - Key: Environment
+          Value: Production
+    DependsOn:
+      - MetricsTimestreamDatabase
+
+  MetricsAvgPerDayScheduledQuery:
+    Type: 'AWS::Timestream::ScheduledQuery'
+    Condition: ShouldCreateScheduledQuery
+    Properties:
+      QueryString: !Sub |
+        SELECT
+          BIN(time, 1d) AS "time",
+          "name",
+          AVG(value) AS "value"
+        FROM
+          ${TimestreamDatabaseName}.metrics_hr
+        GROUP BY
+          "name", BIN(time, 1d)
+      ScheduleConfiguration:
+        ScheduleExpression: rate(24 hours)
+      ScheduledQueryExecutionRoleArn: !GetAtt MetricsScheduledTimeStreamQueryExecutionRole.Arn
+      NotificationConfiguration:
+        SnsConfiguration:
+          TopicArn: !Ref MetricsScheduledQuerySNSTopic
+      ErrorReportConfiguration:
+        S3Configuration:
+          BucketName: !Ref TimeStreamBucketName
+      TargetConfiguration:
+        TimestreamConfiguration:
+          DatabaseName: !Ref TimestreamDatabaseName
+          TableName: metrics_day
+          TimeColumn: time
+          MultiMeasureMappings:
+            MultiMeasureAttributeMappings:
+              - MeasureValueType: DOUBLE
+                SourceColumn: value
+            TargetMultiMeasureName: value
+          DimensionMappings:
+            - Name: name
+              DimensionValueType: VARCHAR
+    DependsOn:
+      - MetricsTimestreamDatabase
+      - MetricsScheduledTimeStreamQueryExecutionRole
+      - MetricsTimeStreamBucket
+      - MetricsHrTable
+      - MetricsDayTable
+      - MetricsScheduledQuerySNSTopic
+
+  ## Kinesis Stream
+  MetricsRawKinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: RawMetricsKinesisStream
+      ShardCount: 1
+
+  MetricsProcessedKinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: ProcessedMetricsKinesisStream
+      ShardCount: 1
+
+  # MetricsKinesisEventSource:
+  #   Type: AWS::Lambda::EventSourceMapping
+  #   Properties:
+  #     EventSourceArn: !GetAtt MetricsRawKinesisStream.Arn
+  #     FunctionName: !GetAtt MetricsLambdaFunction.Arn
+  #     StartingPosition: LATEST
+
+  MetricsKinesisAnalyticsApplication:
+    Type: AWS::KinesisAnalyticsV2::Application
+    Properties:
+      ApplicationName: MetricsKinesisAnalyticsApp
+      RuntimeEnvironment: SQL-1_0
+      ServiceExecutionRole: !GetAtt MetricsKinesisAnalyticsRole.Arn
+      ApplicationConfiguration:
+        ApplicationCodeConfiguration:
+          CodeContentType: PLAINTEXT
+          CodeContent:
+            TextContent: |
+              -- Create a stream to ingest data
+              CREATE OR REPLACE STREAM "SOURCE_SQL_STREAM_001" (
+                "name" VARCHAR,
+                "value" DOUBLE,
+                "time" TIMESTAMP
+              );
+
+              -- Create an output stream to store the result
+              CREATE OR REPLACE STREAM "RESULT_SQL_STREAM" (
+                "name" VARCHAR,
+                "value" DOUBLE,
+                "time" TIMESTAMP
+              );
+
+              -- Query to calculate average per minute for value grouped by name
+              -- and insert the result into the output stream
+              INSERT INTO "RESULT_SQL_STREAM"
+              SELECT
+                "name",
+                AVG("value") AS "value",
+                TUMBLE_START("time", INTERVAL '1' MINUTE) AS "time"
+              FROM
+                "SOURCE_SQL_STREAM_001"
+              GROUP BY
+                "name", TUMBLE("time", INTERVAL '1' MINUTE);
+
+              -- Insert the results into the Kinesis stream
+              CREATE OR REPLACE PUMP "STREAM_PUMP" AS INSERT INTO "${MetricsProcessedKinesisStream.Arn}"
+                SELECT STREAM * FROM "SOURCE_SQL_STREAM_001";
+    DependsOn:
+      - MetricsProcessedKinesisStream
+      - MetricsRawKinesisStream
+      - MetricsKinesisAnalyticsRole
+
+  MetricsKinesisAnalyticsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: MetricsKinesisAnalyticsRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: kinesisanalytics.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MetricsKinesisAnalyticsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kinesis:GetRecords
+                  - kinesis:GetShardIterator
+                  - kinesis:DescribeStream
+                Resource: !GetAtt MetricsRawKinesisStream.Arn
+    DependsOn:
+      - MetricsRawKinesisStream
+
+  MetricsKinesisFirehoseRolePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: MetricsKinesisFirehoseRolePolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - kinesis:PutRecord
+              - kinesis:PutRecords
+            Resource: !Sub arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MetricsProcessedKinesisStream.Arn}
+      Roles:
+        - Ref: MetricsKinesisAnalyticsRole
+    DependsOn:
+      - MetricsProcessedKinesisStream
+
+  ## Visualization
+  MetricsQuickSightAnalysis:
+    Type: 'AWS::QuickSight::Analysis'
+    Properties:
+      AwsAccountId: !Ref 'AWS::AccountId'
+      AnalysisId: MetricsTimestreamAnalysis
+      Name: MetricsTimestreamAnalysis
+      Definition:
+        DataSetIdentifierDeclarations:
+          - DataSetArn: !GetAtt MetricsRawTimestreamDataSet.Arn
+            Identifier: MetricsRawTimestreamDataSetId
+          - DataSetArn: !GetAtt MetricsAvgMinTimestreamDataSet.Arn
+            Identifier: MetricsAvgMinTimestreamDataSetId
+          - DataSetArn: !GetAtt MetricsAvgHrTimestreamDataSet.Arn
+            Identifier: MetricsAvgMinTimestreamDataSetId
+          - DataSetArn: !GetAtt MetricsAvgDayTimestreamDataSet.Arn
+            Identifier: MetricsAvgMinTimestreamDataSetId
+      Permissions:
+        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+          Actions:
+            - "quicksight:DescribeAnalysis"
+            - "quicksight:DescribeDataSet"
+            - "quicksight:DescribeDataSetPermissions"
+            - "quicksight:PassDataSet"
+            - "quicksight:DescribeIngestion"
+            - "quicksight:ListIngestions"
+            - "quicksight:CreateIngestion"
+            - "quicksight:CancelIngestion"
+            - "quicksight:UpdateAnalysis"
+            - "quicksight:QueryAnalysis"
+
+  MetricsQuickSightTemplate:
+    Type: 'AWS::QuickSight::Template'
+    Properties:
+      AwsAccountId: !Ref 'AWS::AccountId'
+      Name: MetricsQuickSightTemplate
+      Permissions:
+        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+          Actions:
+            - 'quicksight:DescribeTemplate'
+            - 'quicksight:DescribeTemplateAlias'
+            - 'quicksight:DeleteTemplateAlias'
+            - 'quicksight:UpdateTemplatePermissions'
+            - 'quicksight:QueryTemplate'
+            - 'quicksight:UpdateTemplate'
+            - 'quicksight:CreateTemplateAlias'
+      SourceEntity:
+        SourceAnalysis:
+          Arn: !GetAtt MetricsQuickSightAnalysis.Arn
+    DependsOn:
+      - MetricsQuickSightAnalysis
+
+  MetricsQuickSightDashboard:
+    Type: 'AWS::QuickSight::Dashboard'
+    Properties:
+      AwsAccountId: !Ref 'AWS::AccountId'
+      DashboardId: MetricsQuickSightDashboard
+      Name: MetricsQuickSightDashboard
+      Permissions:
+        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+          Actions:
+            - 'quicksight:DescribeDashboard'
+            - 'quicksight:ListDashboardVersions'
+            - 'quicksight:UpdateDashboardPermissions'
+            - 'quicksight:QueryDashboard'
+            - 'quicksight:RestoreAnalysis'
+            - 'quicksight:UpdateDashboard'
+      SourceEntity:
+        SourceTemplate:
+          Arn: !GetAtt MetricsQuickSightTemplate.Arn
+    DependsOn:
+      - MetricsQuickSightTemplate
+
+  MetricsRawTimestreamDataSet:
+    Type: 'AWS::QuickSight::DataSet'
+    Properties:
+      AwsAccountId: !Ref 'AWS::AccountId'
+      DataSetId: MetricsRawTimestreamDataSet
+      Name: MetricsRawTimestreamDataSet
+      PhysicalTableMap:
+        MetricsRawTimestreamTable:
+          CustomSql:
+            DataSourceArn: !GetAtt MetricsTimestreamDataSource.Arn
+            Name: MetricsTimestreamDatabase.metrics_raw
+            Columns:
+              - Name: name
+                Type: STRING
+              - Name: value
+                Type: DECIMAL
+              - Name: time
+                Type: DATETIME
+            SqlQuery: !Sub |
+              SELECT
+                BIN(time, 1s) AS "time",
+                "name",
+                AVG(value) AS "value"
+              FROM
+                ${TimestreamDatabaseName}.metrics_raw
+              GROUP BY
+                "name", BIN(time, 1s)
+      LogicalTableMap:
+        MetricsRawTimestreamTable:
+          Alias: metrics_raw
+          Source:
+            PhysicalTableId: MetricsRawTimestreamTable
+      ImportMode: DIRECT_QUERY
+    DependsOn:
+      - MetricsTimestreamDataSource
+      - MetricsTimestreamDatabase
+      - MetricsRawTable
+
+  MetricsAvgMinTimestreamDataSet:
+    Type: 'AWS::QuickSight::DataSet'
+    Properties:
+      AwsAccountId: !Ref 'AWS::AccountId'
+      DataSetId: MetricsAvgMinTimestreamDataSet
+      Name: MetricsAvgMinTimestreamDataSet
+      PhysicalTableMap:
+        MetricsAvgMinTimestreamTable:
+          CustomSql:
+            DataSourceArn: !GetAtt MetricsTimestreamDataSource.Arn
+            Name: MetricsTimestreamDatabase.metrics_min
+            Columns:
+              - Name: name
+                Type: STRING
+              - Name: value
+                Type: DECIMAL
+              - Name: time
+                Type: DATETIME
+            SqlQuery: !Sub |
+              SELECT
+                BIN(time, 1m) AS "time",
+                "name",
+                AVG(value) AS "value"
+              FROM
+                ${TimestreamDatabaseName}.metrics_min
+              GROUP BY
+                "name", BIN(time, 1m)
+      LogicalTableMap:
+        MetricsAvgMinTimestreamTable:
+          Alias: metrics_min
+          Source:
+            PhysicalTableId: MetricsAvgMinTimestreamTable
+      ImportMode: DIRECT_QUERY
+    DependsOn:
+      - MetricsTimestreamDataSource
+      - MetricsTimestreamDatabase
+      - MetricsMinTable
+
+  MetricsAvgHrTimestreamDataSet:
+    Type: 'AWS::QuickSight::DataSet'
+    Properties:
+      AwsAccountId: !Ref 'AWS::AccountId'
+      DataSetId: MetricsAvgHrTimestreamDataSet
+      Name: MetricsAvgHrTimestreamDataSet
+      PhysicalTableMap:
+        MetricsAvgHrTimestreamTable:
+          CustomSql:
+            DataSourceArn: !GetAtt MetricsTimestreamDataSource.Arn
+            Name: MetricsTimestreamDatabase.metrics_hr
+            Columns:
+              - Name: name
+                Type: STRING
+              - Name: value
+                Type: DECIMAL
+              - Name: time
+                Type: DATETIME
+            SqlQuery: !Sub |
+              SELECT
+                BIN(time, 1h) AS "time",
+                "name",
+                AVG(value) AS "value"
+              FROM
+                ${TimestreamDatabaseName}.metrics_hr
+              GROUP BY
+                "name", BIN(time, 1h)
+      LogicalTableMap:
+        MetricsAvgHrTimestreamTable:
+          Alias: metrics_hr
+          Source:
+            PhysicalTableId: MetricsAvgHrTimestreamTable
+      ImportMode: DIRECT_QUERY
+    DependsOn:
+      - MetricsTimestreamDataSource
+      - MetricsTimestreamDatabase
+      - MetricsHrTable
+
+  MetricsAvgDayTimestreamDataSet:
+    Type: 'AWS::QuickSight::DataSet'
+    Properties:
+      AwsAccountId: !Ref 'AWS::AccountId'
+      DataSetId: MetricsAvgDayTimestreamDataSet
+      Name: MetricsAvgDayTimestreamDataSet
+      PhysicalTableMap:
+        MetricsAvgDayTimestreamTable:
+          CustomSql:
+            DataSourceArn: !GetAtt MetricsTimestreamDataSource.Arn
+            Name: MetricsTimestreamDatabase.metrics_day
+            Columns:
+              - Name: name
+                Type: STRING
+              - Name: value
+                Type: DECIMAL
+              - Name: time
+                Type: DATETIME
+            SqlQuery: !Sub |
+              SELECT
+                BIN(time, 1d) AS "time",
+                "name",
+                AVG(value) AS "value"
+              FROM
+                ${TimestreamDatabaseName}.metrics_day
+              GROUP BY
+                "name", BIN(time, 1d)
+      LogicalTableMap:
+        MetricsAvgDayTimestreamTable:
+          Alias: metrics_day
+          Source:
+            PhysicalTableId: MetricsAvgDayTimestreamTable
+      ImportMode: DIRECT_QUERY
+    DependsOn:
+      - MetricsTimestreamDataSource
+      - MetricsTimestreamDatabase
+      - MetricsDayTable
+
+  MetricsTimestreamDataSource:
+    Type: 'AWS::QuickSight::DataSource'
+    Properties:
+      AwsAccountId: !Ref 'AWS::AccountId'
+      DataSourceId: MetricsTimestreamDataSource
+      Name: MetricsTimestreamDataSource
+      Type: 'TIMESTREAM'
+    DependsOn:
+      - MetricsTimestreamDatabase
+  
+  MetricsVisualizationRoute53RecordSet:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneId: !GetAtt MetricsCustomDomain.RegionalHostedZoneId
+      Name: !Ref VisualizationDomainName
+      Type: CNAME
+      TTL: '300'
+      ResourceRecords:
+        - !Sub 'https://${AWS::Region}.quicksight.aws.amazon.com/sn/MetricsQuickSightDashboard'
+    DependsOn:
+      - MetricsCustomDomain
