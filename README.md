@@ -21,3 +21,9 @@ A Frontend + Backend application that allows you to post and visualize metrics.
 ![](https://drive.google.com/uc?id=1pT9YBHwZr-3JFQTyfol04A9L7j2hJxUa)
 
 The iterative thinking process that got us here: [Architecture](./docs/01-Architecture.md).
+
+------------
+
+## Setup
+
+Check installation steps: [Setup](./docs/02-Setup.md).

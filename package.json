@@ -1,0 +1,15 @@
+{
+  "name": "metrics",
+  "version": "1.0.0",
+  "scripts": {
+    "doc": "node docs/api/generateDocs.js && node docs/api/serveDocs.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "gitmoji-cli": "^9.0.0"
+  }
+}
