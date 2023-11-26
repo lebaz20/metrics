@@ -16,8 +16,8 @@ A Frontend + Backend application that allows you to post and visualize metrics.
 
 ![](https://drive.google.com/uc?id=1aEm-mb-e164g9aISS-t_khH987DvdPl0)
 #### Infrastructure utilizing AWS services
-![](https://drive.google.com/uc?id=1tjOFnWVw7yyvK_scHcw-f0QwWUJyO4YO)
+![](https://drive.google.com/uc?id=1ITOX3qhsgW5oF-UffAkUN-f2biSA15Lh)
+#### Actual Stack
+![](https://drive.google.com/uc?id=1pT9YBHwZr-3JFQTyfol04A9L7j2hJxUa)
 
 The iterative thinking process that got us here: [Architecture](./docs/01-Architecture.md).
-
-
