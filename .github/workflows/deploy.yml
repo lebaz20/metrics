@@ -58,6 +58,7 @@ jobs:
           # The parameters to override in the stack inputs. You can pass a comma-delimited list or a file URL. Comma-delimited list has each entry formatted as <ParameterName>=<ParameterValue> or <ParameterName>="<ParameterValue>,<ParameterValue>". A JSON file can be a local file with a "file://" prefix or remote URL. The file should look like: [ { "ParameterKey": "KeyPairName", "ParameterValue": "MyKey" }]
           parameter-overrides: >-
             LambdaBucketName=${{ vars.LAMBDA_BUCKET_NAME }},
+            Username=${{ secrets.AWS_USERNAME }},
             ShouldCreateScheduledQuery="false"
           # Indicates whether to execute to the change set or have it reviewed. Default to '0' (will execute the change set)
           no-execute-changeset: # optional, default is 0

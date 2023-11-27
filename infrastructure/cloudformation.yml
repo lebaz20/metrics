@@ -2,6 +2,10 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: AWS CloudFormation Template for S3, Lambda, Kinesis, Kinesis Analytics, Timestream, API Gateway, Route 53, QuickSight, and CloudFront
 
 Parameters:
+  Username:
+    Type: String
+    Description: User with enough access to create needed resources
+
   DomainName:
     Type: String
     Description: The custom domain name for metrics API
@@ -550,7 +554,7 @@ Resources:
           - DataSetArn: !GetAtt MetricsAvgDayTimestreamDataSet.Arn
             Identifier: MetricsAvgMinTimestreamDataSetId
       Permissions:
-        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:user/${Username}'
           Actions:
             - "quicksight:DescribeAnalysis"
             - "quicksight:DescribeDataSet"
@@ -569,7 +573,7 @@ Resources:
       AwsAccountId: !Ref 'AWS::AccountId'
       Name: MetricsQuickSightTemplate
       Permissions:
-        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:user/${Username}'
           Actions:
             - 'quicksight:DescribeTemplate'
             - 'quicksight:DescribeTemplateAlias'
@@ -591,7 +595,7 @@ Resources:
       DashboardId: MetricsQuickSightDashboard
       Name: MetricsQuickSightDashboard
       Permissions:
-        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+        - Principal: !Sub 'arn:aws:iam::${AWS::AccountId}:user/${Username}'
           Actions:
             - 'quicksight:DescribeDashboard'
             - 'quicksight:ListDashboardVersions'
