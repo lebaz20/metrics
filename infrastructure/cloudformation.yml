@@ -179,11 +179,6 @@ Resources:
                 Resource: !Sub 'arn:aws:s3:::${AssetsBucketName}/*'
 
   ## Metrics lambda function
-  MetricsLambdaBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: !Ref LambdaBucketName
-
   MetricsLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
