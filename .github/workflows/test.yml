@@ -29,25 +29,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Install Yarn and npm dependencies
-        run: |
-          cd src/api/
-          npm install -g yarn
-          yarn install
-
-      - name: Build bundle
-        run: |
-          cd src/api/
-          yarn build  # Adjust this command based on your project
-
-      - name: Zip Lambda function
-        run: zip -r lambda-code.zip file:///${{ github.workspace }}/../dist/api/index.js
-
       - name: Configure AWS credentials
         id: creds
         uses: aws-actions/configure-aws-credentials@v1
@@ -65,8 +46,20 @@ jobs:
           echo "Environment name: $ENVIRONMENT"
           echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
 
-      - name: Upload zip file to S3
-        run: aws s3 cp lambda-code.zip s3://metrics-lambda-code-bucket/lambda-code.zip
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Build and upload API
+        run: |
+          cd src/api/
+          npm install -g yarn
+          yarn install
+          yarn build  # Adjust this command based on your project
+          cd ../../dist
+          zip -r lambda-code.zip api/index.js
+          aws s3 cp lambda-code.zip s3://metrics-lambda-code-bucket/lambda-code.zip
 
       - name: AWS CloudFormation "Deploy CloudFormation Stack" Action for GitHub Actions
         # You may pin to the exact commit or the version.
