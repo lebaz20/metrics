@@ -39,13 +39,6 @@ jobs:
 
       - name: Build and upload API
         run: |
-          cd src/api/
-          npm install -g yarn
-          yarn install
-          yarn build  # Adjust this command based on your project
-          cd ../../dist
-          zip -r lambda-code.zip api/index.js
-          cd ../.github/workflows/
           ./uploadLambda.sh
         env:
           LAMBDA_BUCKET_NAME: ${{ vars.LAMBDA_BUCKET_NAME }}
