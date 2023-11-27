@@ -41,7 +41,9 @@ jobs:
           yarn install
 
       - name: Build bundle
-        run: yarn build  # Adjust this command based on your project
+        run: |
+          cd src/api/
+          yarn build  # Adjust this command based on your project
 
       - name: Zip Lambda function
         run: zip -r lambda-code.zip file:///${{ github.workspace }}/dist/api
