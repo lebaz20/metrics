@@ -40,7 +40,7 @@ jobs:
       # - name: Build and upload API
       #   run: |
       #     cd .github/workflows
-      #     ./uploadLambda.sh
+      #     ./deployAPI.sh
       #   env:
       #     LAMBDA_BUCKET_NAME: ${{ vars.LAMBDA_BUCKET_NAME }}
 
@@ -59,7 +59,7 @@ jobs:
           parameter-overrides: >-
             LambdaBucketName=${{ vars.LAMBDA_BUCKET_NAME }},
             Username=${{ secrets.AWS_USERNAME }},
-            ShouldCreateResource="false"
+            ShouldCreateResource=${{ vars.SHOULD_CREATE_RESOURCE }}
           # Indicates whether to execute to the change set or have it reviewed. Default to '0' (will execute the change set)
           no-execute-changeset: # optional, default is 0
           # Indicates whether to delete to a failed change set. Default to '0' (will delete the failed changeset)
