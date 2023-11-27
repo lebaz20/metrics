@@ -50,7 +50,7 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           # The name of the CloudFormation stack
-          name: metrics-demo
+          name: metrics-production
           # The path or URL to the CloudFormation template
           template: file:///${{ github.workspace }}/infrastructure/cloudformation.yml
           # The comma-delimited list of stack template capabilities to acknowledge. Defaults to 'CAPABILITY_IAM'

@@ -15,6 +15,6 @@ yarn install
 yarn build  # Adjust this command based on your project
 
 # Copy files to the bucket
-cd ../../dist/api
+cd ../../dist
 zip -r lambda-code.zip api/index.js
 aws s3 cp lambda-code.zip s3://$LAMBDA_BUCKET_NAME/lambda-code.zip
