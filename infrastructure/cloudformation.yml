@@ -46,16 +46,16 @@ Parameters:
     Description: Number of days to store table
     Default: 1
   
-  ShouldCreateScheduledQuery:
+  ShouldCreateResource:
     Type: String
     Default: "false"
     AllowedValues:
       - "true"
       - "false"
-    Description: Create scheduled queries only when tables have data first to avoid errors
+    Description: Create resources only when needed
 
 Conditions:
-  ShouldCreateScheduledQuery: !Equals [!Ref ShouldCreateScheduledQuery, "true"]
+  ShouldCreateResource: !Equals [!Ref ShouldCreateResource, "true"]
 
 Resources:
   ## API Gateway
@@ -296,7 +296,7 @@ Resources:
 
   MetricsAvgPerHourScheduledQuery:
     Type: 'AWS::Timestream::ScheduledQuery'
-    Condition: ShouldCreateScheduledQuery
+    Condition: ShouldCreateResource
     Properties:
       QueryString: !Sub |
         SELECT
@@ -388,7 +388,7 @@ Resources:
 
   MetricsAvgPerDayScheduledQuery:
     Type: 'AWS::Timestream::ScheduledQuery'
-    Condition: ShouldCreateScheduledQuery
+    Condition: ShouldCreateResource
     Properties:
       QueryString: !Sub |
         SELECT
@@ -539,6 +539,7 @@ Resources:
   ## Visualization
   MetricsQuickSightAnalysis:
     Type: 'AWS::QuickSight::Analysis'
+    Condition: ShouldCreateResource
     Properties:
       AwsAccountId: !Ref 'AWS::AccountId'
       AnalysisId: MetricsTimestreamAnalysis
@@ -569,6 +570,7 @@ Resources:
 
   MetricsQuickSightTemplate:
     Type: 'AWS::QuickSight::Template'
+    Condition: ShouldCreateResource
     Properties:
       AwsAccountId: !Ref 'AWS::AccountId'
       Name: MetricsQuickSightTemplate
@@ -590,6 +592,7 @@ Resources:
 
   MetricsQuickSightDashboard:
     Type: 'AWS::QuickSight::Dashboard'
+    Condition: ShouldCreateResource
     Properties:
       AwsAccountId: !Ref 'AWS::AccountId'
       DashboardId: MetricsQuickSightDashboard
@@ -611,6 +614,7 @@ Resources:
 
   MetricsRawTimestreamDataSet:
     Type: 'AWS::QuickSight::DataSet'
+    Condition: ShouldCreateResource
     Properties:
       AwsAccountId: !Ref 'AWS::AccountId'
       DataSetId: MetricsRawTimestreamDataSet
@@ -649,6 +653,7 @@ Resources:
 
   MetricsAvgMinTimestreamDataSet:
     Type: 'AWS::QuickSight::DataSet'
+    Condition: ShouldCreateResource
     Properties:
       AwsAccountId: !Ref 'AWS::AccountId'
       DataSetId: MetricsAvgMinTimestreamDataSet
@@ -687,6 +692,7 @@ Resources:
 
   MetricsAvgHrTimestreamDataSet:
     Type: 'AWS::QuickSight::DataSet'
+    Condition: ShouldCreateResource
     Properties:
       AwsAccountId: !Ref 'AWS::AccountId'
       DataSetId: MetricsAvgHrTimestreamDataSet
@@ -725,6 +731,7 @@ Resources:
 
   MetricsAvgDayTimestreamDataSet:
     Type: 'AWS::QuickSight::DataSet'
+    Condition: ShouldCreateResource
     Properties:
       AwsAccountId: !Ref 'AWS::AccountId'
       DataSetId: MetricsAvgDayTimestreamDataSet
@@ -763,6 +770,7 @@ Resources:
 
   MetricsTimestreamDataSource:
     Type: 'AWS::QuickSight::DataSource'
+    Condition: ShouldCreateResource
     Properties:
       AwsAccountId: !Ref 'AWS::AccountId'
       DataSourceId: MetricsTimestreamDataSource
@@ -773,6 +781,7 @@ Resources:
   
   MetricsVisualizationRoute53RecordSet:
     Type: 'AWS::Route53::RecordSet'
+    Condition: ShouldCreateResource
     Properties:
       HostedZoneId: !GetAtt MetricsCustomDomain.RegionalHostedZoneId
       Name: !Ref VisualizationDomainName
