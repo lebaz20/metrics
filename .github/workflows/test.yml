@@ -46,7 +46,7 @@ jobs:
           yarn build  # Adjust this command based on your project
 
       - name: Zip Lambda function
-        run: zip -r lambda-code.zip file:///${{ github.workspace }}/dist/api/index.js
+        run: zip -r lambda-code.zip file:///${{ github.workspace }}/../dist/api/index.js
 
       - name: Configure AWS credentials
         id: creds
