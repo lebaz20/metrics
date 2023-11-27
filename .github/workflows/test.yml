@@ -21,7 +21,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Print Repository Name
-        run: echo "env.AWS_REGION: ${{ env.AWS_REGION }}"
+        run: echo "${{ env.AWS_REGION }}"
         
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout code
