@@ -1,6 +1,0 @@
-[
-    {
-      "ParameterKey": "LambdaBucketName",
-      "ParameterValue": "${{ vars.LAMBDA_BUCKET_NAME }}"
-    }
-]

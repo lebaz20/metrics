@@ -195,7 +195,6 @@ Resources:
           KINESIS_STREAM_ARN: !GetAtt MetricsRawKinesisStream.Arn
     DependsOn:
       - MetricsLambdaExecutionRole
-      - MetricsLambdaBucket
       - MetricsRawKinesisStream
 
   MetricsLambdaExecutionRole:
