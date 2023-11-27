@@ -39,6 +39,7 @@ jobs:
 
       - name: Build and upload API
         run: |
+          cd .github/workflows
           ./uploadLambda.sh
         env:
           LAMBDA_BUCKET_NAME: ${{ vars.LAMBDA_BUCKET_NAME }}
