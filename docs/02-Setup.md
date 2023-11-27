@@ -49,6 +49,8 @@ The Frontend needed to insert metrics
 
 For more info check: [Client README](./../src/client/README.md).
 
+![](https://drive.google.com/uc?id=1mPzUe8-eJCg0tQ6z7MOxwdl1UG7DDPgg)
+
 ### Deployment
 #### Stack
 - Github Actions
