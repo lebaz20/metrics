@@ -30,7 +30,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Install Node.js
         uses: actions/setup-node@v3
@@ -45,7 +45,7 @@ jobs:
           yarn build  # Adjust this command based on your project
           cd ../../dist
           zip -r lambda-code.zip api/index.js
-          aws s3 cp lambda-code.zip s3://${{ env.LAMBDA_BUCKET_NAME }}/lambda-code.zip
+          aws s3 cp lambda-code.zip s3://${{ vars.LAMBDA_BUCKET_NAME }}/lambda-code.zip
 
       - name: AWS CloudFormation "Deploy CloudFormation Stack" Action for GitHub Actions
         # You may pin to the exact commit or the version.
@@ -53,7 +53,7 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           # The name of the CloudFormation stack
-          name: metrics-${{ steps.env-name.outputs.environment }}
+          name: metrics-demo
           # The path or URL to the CloudFormation template
           template: file:///${{ github.workspace }}/infrastructure/cloudformation.yml
           # The comma-delimited list of stack template capabilities to acknowledge. Defaults to 'CAPABILITY_IAM'
