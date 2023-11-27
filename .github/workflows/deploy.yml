@@ -54,7 +54,7 @@ jobs:
           # The path or URL to the CloudFormation template
           template: infrastructure/cloudformation.yml
           # The comma-delimited list of stack template capabilities to acknowledge. Defaults to 'CAPABILITY_IAM'
-          capabilities: CAPABILITY_IAM # optional, default is CAPABILITY_IAM
+          capabilities: CAPABILITY_NAMED_IAM # optional, default is CAPABILITY_IAM
           # The parameters to override in the stack inputs. You can pass a comma-delimited list or a file URL. Comma-delimited list has each entry formatted as <ParameterName>=<ParameterValue> or <ParameterName>="<ParameterValue>,<ParameterValue>". A JSON file can be a local file with a "file://" prefix or remote URL. The file should look like: [ { "ParameterKey": "KeyPairName", "ParameterValue": "MyKey" }]
           parameter-overrides: >-
             LambdaBucketName=${{ vars.LAMBDA_BUCKET_NAME }},
