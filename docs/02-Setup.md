@@ -19,11 +19,12 @@ The API endpoint needed to post metrics
 4. `yarn lint:fix` to fix static errors if possible
 5. `yarn prettier` to unify formatting
 6. `yarn test` to run tests
-7. `yarn dry-run` to try to run code in case any errors can be discovered by this stage
-8. `yarn build` to generate a production build (at path/to/project/dist/api)
+7. `yarn test:watch` to run tests with code changes
+8. `yarn dry-run` to try to run code in case any errors can be discovered by this stage
+9. `yarn build` to generate a production build (at path/to/project/dist/api)
 
 #### Docs
-To generate docs: Run `yarn doc` then open [API Docs](http://localhost:3000/api-docs).
+To generate docs: Run `yarn doc` from root directory then open [API Docs](http://localhost:3000/api-docs).
 ![](https://drive.google.com/uc?id=1UtfAgdaVUk-DerwcLWWlt91lXRLmg4WQ)
 
 ### Client
@@ -39,10 +40,12 @@ The Frontend needed to insert metrics
 2. `yarn` to install api dependencies
 3. `yarn lint` to run static anaylsis tests
 4. `yarn lint:fix` to fix static errors if possible
-5. `yarn test` to run tests
-6. `yarn dev` to start dev server
-7. `yarn preview` to locally preview production build
-8. `yarn build` to generate a production build (at path/to/project/dist/client)
+5. `yarn prettier` to unify formatting
+6. `yarn test` to run tests
+7. `yarn test:watch` to run tests with code changes
+8. `yarn dev` to start dev server
+9. `yarn preview` to locally preview production build
+10. `yarn build` to generate a production build (at path/to/project/dist/client)
 
 For more info check: [Client README](./../src/client/README.md).
 
@@ -54,7 +57,10 @@ For more info check: [Client README](./../src/client/README.md).
 - Cypress
 
 #### Commits
-To commit code changes: Run `yarn gitmoji -c` at the root directory and it will start an interactive tool to commit changes with readable messages. 
+To commit code changes: Run `yarn gitmoji -c` at the root directory and it will start an interactive tool to commit changes with readable messages.
+
+#### End-to-end tests
+To run e2e tests: Run `yarn e2e` at the root directory.
 
 ## Future Enhancements
 - Add live monitoring for client-side to catch front-end errors.

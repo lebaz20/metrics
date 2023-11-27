@@ -1,33 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react'
+import {
+  Container,
+  Form,
+  Label,
+  Input,
+  SubmitButton,
+  ResponseContainer,
+} from './styles/App.styles'
+import Header from './Header'
+import { postRecord } from './lib/request'
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => {
+  const [name, setName] = useState<string>('')
+  const [value, setValue] = useState<number | 0>(0)
+  const [response, setResponse] = useState<string>('')
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const data = await postRecord(name, value)
+    if (data) {
+      setResponse(JSON.stringify(data, null, 2))
+    }
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Header />
+      <Container>
+        <Form onSubmit={handleSubmit}>
+          <Label>
+            Name:
+            <Input
+              type='text'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Label>
+          <Label>
+            Value:
+            <Input
+              type='number'
+              value={value}
+              onChange={(e) =>
+                setValue(e.target.value === '' ? 0 : parseInt(e.target.value, 10))
+              }
+            />
+          </Label>
+          <SubmitButton type='submit'>Submit Metric Reading</SubmitButton>
+        </Form>
+        {response && (
+          <ResponseContainer>
+            <h3>Response:</h3>
+            <pre>{response}</pre>
+          </ResponseContainer>
+        )}
+      </Container>
     </>
   )
 }
