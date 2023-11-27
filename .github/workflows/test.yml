@@ -1,0 +1,100 @@
+name: Deploy
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'eu-west-1'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install Yarn and npm dependencies
+        run: |
+          cd src/api/
+          npm install -g yarn
+          yarn install
+
+      - name: Build bundle
+        run: yarn build  # Adjust this command based on your project
+
+      - name: Zip Lambda function
+        run: zip -r lambda-code.zip file:///${{ github.workspace }}/dist/api
+
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.region}}
+
+      - name: Configure environment name
+        id: env-name
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          ENVIRONMENT=`echo $REPO | tr "/" "-"`
+          echo "Environment name: $ENVIRONMENT"
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+
+      - name: Upload zip file to S3
+        run: aws s3 cp lambda-code.zip s3://metrics-lambda-code-bucket/lambda-code.zip
+
+      - name: AWS CloudFormation "Deploy CloudFormation Stack" Action for GitHub Actions
+        # You may pin to the exact commit or the version.
+        # uses: aws-actions/aws-cloudformation-github-deploy@023f4ef60d0103d690f31a504cfda9f4f2d66265
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          # The name of the CloudFormation stack
+          name: metrics-${{ steps.env-name.outputs.environment }}
+          # The path or URL to the CloudFormation template
+          template: file:///${{ github.workspace }}/infrastructure/cloudformation.yml
+          # The comma-delimited list of stack template capabilities to acknowledge. Defaults to 'CAPABILITY_IAM'
+          capabilities: # optional, default is CAPABILITY_IAM
+          # The parameters to override in the stack inputs. You can pass a comma-delimited list or a file URL. Comma-delimited list has each entry formatted as <ParameterName>=<ParameterValue> or <ParameterName>="<ParameterValue>,<ParameterValue>". A JSON file can be a local file with a "file://" prefix or remote URL. The file should look like: [ { "ParameterKey": "KeyPairName", "ParameterValue": "MyKey" }]
+          parameter-overrides: file:///${{ github.workspace }}/infrastructure/parameters.json
+          # Indicates whether to execute to the change set or have it reviewed. Default to '0' (will execute the change set)
+          no-execute-changeset: # optional, default is 0
+          # Indicates whether to delete to a failed change set. Default to '0' (will delete the failed changeset)
+          no-delete-failed-changeset: # optional, default is 0
+          # If the CloudFormation change set is empty, do not fail. Defaults to '0' (will fail on empty change set)
+          no-fail-on-empty-changeset: # optional, default is 0
+          # Disable rollback of the stack if stack creation fails. Defaults to '0' (will rollback if stack creation fails). This input is only used for stack creation, not for stack update
+          disable-rollback: # optional, default is 0
+          # The amount of time that can pass before the stack status becomes CREATE_FAILED. This input is only used for stack creation, not for stack update
+          timeout-in-minutes: # optional
+          # The comma-delimited list of Amazon SNS topic ARNs to publish stack related events
+          notification-arns: # optional
+          # The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that AWS CloudFormation assumes to create the stack. AWS CloudFormation uses the role's credentials to make calls on your behalf. AWS CloudFormation always uses this role for all future operations on the stack. As long as users have permission to operate on the stack, AWS CloudFormation uses this role even if the users don't have permission to pass it. Ensure that the role grants least privilege. If you don't specify a value, AWS CloudFormation uses the role that was previously associated with the stack
+          role-arn: # optional
+          # Key-value pairs to associate with this stack. This input should be JSON-formatted, for example [ { "Key": "string", "Value": "string" } ]
+          tags: # optional
+          # Whether to enable termination protection on the specified stack. Defaults to '0' (terminated protection will be disabled) This input is only used for stack creation, not for stack update
+          termination-protection: # optional, default is 0
+            
