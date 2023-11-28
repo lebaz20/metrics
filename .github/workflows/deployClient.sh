@@ -7,7 +7,7 @@ if aws s3api head-bucket --bucket "$ASSETS_BUCKET_NAME" 2>/dev/null; then
     echo "Bucket $ASSETS_BUCKET_NAME already exists."
 else
     # Create the S3 bucket
-    aws s3api create-bucket --bucket "$ASSETS_BUCKET_NAME" --create-bucket-configuration LocationConstraint="$REGION"
+    aws s3api create-bucket --bucket "$ASSETS_BUCKET_NAME" --acl public-read --create-bucket-configuration LocationConstraint="$REGION"
     echo "Bucket $ASSETS_BUCKET_NAME created at $REGION."
 
     # Enable static website hosting
@@ -17,10 +17,6 @@ else
         }
     }'
     echo "Static website hosting enabled for $ASSETS_BUCKET_NAME."
-
-    # Configure bucket policy for public access
-    aws s3api put-bucket-acl --bucket "$ASSETS_BUCKET_NAME" --region "$REGION" --acl public-read
-    echo "Bucket policy configured for public access."
 fi
 
 cd ../../src/client/
