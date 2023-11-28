@@ -6,15 +6,10 @@ Parameters:
     Type: String
     Description: User with enough access to create needed resources
 
-  DomainName:
+  RestApiId:
     Type: String
-    Description: The custom domain name for metrics API
-    Default: metrics-demo.com
-  
-  VisualizationDomainName:
-    Type: String
-    Description: The custom domain name for visualization
-    Default: quicksight.metrics-demo.com
+    Description: The api gatway id used in the url
+    Default: metrics-demo-api
 
   LambdaBucketName:
     Type: String
@@ -62,6 +57,7 @@ Resources:
   MetricsApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
+      RestApiId: !Ref RestApiId # Set a custom RestApiId
       Name: MetricsApiGateway
 
   MetricsApiGatewayResource:
@@ -86,34 +82,6 @@ Resources:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MetricsLambdaFunction.Arn}/invocations
     DependsOn: MetricsApiGatewayResource
 
-  MetricsCertificate:
-    Type: 'AWS::CertificateManager::Certificate'
-    Properties:
-      DomainName: !Ref DomainName
-      ValidationMethod: DNS  # You may choose DNS or EMAIL validation
-      SubjectAlternativeNames:
-        - !Ref DomainName
-
-  MetricsCustomDomain:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: !Ref DomainName
-      CertificateArn: !Ref MetricsCertificate
-      EndpointConfiguration:
-        Types:
-          - REGIONAL # You may choose EDGE, REGIONAL, or PRIVATE
-    DependsOn: MetricsCertificate
-
-  MetricsApiGatewayBasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties:
-      DomainName: !Ref MetricsCustomDomain
-      RestApiId: !Ref MetricsApiGateway
-      Stage: prod
-    DependsOn:
-      - MetricsApiGateway
-      - MetricsCustomDomain
-
   MetricsApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     Properties:
@@ -122,18 +90,6 @@ Resources:
     DependsOn:
       - MetricsApiGateway
       - MetricsApiGatewayMethod
-
-  MetricsRoute53RecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !GetAtt MetricsCustomDomain.RegionalHostedZoneId
-      Name: !Ref DomainName
-      Type: A
-      AliasTarget:
-        DNSName: !Select [2, !Split ["/", !GetAtt MetricsCustomDomain.DistributionDomainName]]
-        HostedZoneId: !Select [0, !Split ["/", !GetAtt MetricsCustomDomain.DistributionDomainName]]
-    DependsOn:
-      - MetricsCustomDomain
 
   ## Assets CDN
   MetricsCloudFrontDistribution:
@@ -150,11 +106,6 @@ Resources:
           TargetOriginId: S3Origin
           ViewerProtocolPolicy: allow-all
         DefaultRootObject: index.html
-        ViewerCertificate:
-          AcmCertificateArn: !Ref MetricsCertificate
-          SslSupportMethod: sni-only
-    DependsOn:
-      - MetricsCertificate
 
   MetricsCloudFrontRole:
     Type: 'AWS::IAM::Role'
@@ -772,16 +723,3 @@ Resources:
       Type: 'TIMESTREAM'
     DependsOn:
       - MetricsTimestreamDatabase
-  
-  MetricsVisualizationRoute53RecordSet:
-    Type: 'AWS::Route53::RecordSet'
-    Condition: ShouldCreateResource
-    Properties:
-      HostedZoneId: !GetAtt MetricsCustomDomain.RegionalHostedZoneId
-      Name: !Ref VisualizationDomainName
-      Type: CNAME
-      TTL: '300'
-      ResourceRecords:
-        - !Sub 'https://${AWS::Region}.quicksight.aws.amazon.com/sn/MetricsQuickSightDashboard'
-    DependsOn:
-      - MetricsCustomDomain

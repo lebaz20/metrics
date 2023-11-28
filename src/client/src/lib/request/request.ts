@@ -15,7 +15,7 @@ export async function postRecord(
   value: number,
 ): Promise<unknown> {
   try {
-    const url = 'https://metrics-demo.com/metric' // Replace with your API endpoint
+    const url = 'https://metrics-demo-api.execute-api.eu-west-1.amazonaws.com/prod/metric' // Replace with your API endpoint
     const { data } = await axios.post(url, {
       name,
       value,

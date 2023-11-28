@@ -54,7 +54,7 @@ jobs:
           ASSETS_BUCKET_NAME: ${{ vars.ASSETS_BUCKET_NAME }}
           REGION: ${{ vars.AWS_REGION }}
 
-      - name: Run Cypress Tests
+      - name: Run E2E Tests
         run: |
           cd .github/workflows
           ./runE2ETests.sh
