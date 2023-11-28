@@ -96,6 +96,7 @@ Resources:
     Type: AWS::CloudFront::CachePolicy
     Properties:
       CachePolicyConfig:
+        Name: MetricsCachePolicy
         DefaultTTL: 60  # Default Time-To-Live (TTL) for cache objects in seconds
         MaxTTL: 3600    # Maximum TTL for cache objects in seconds
         MinTTL: 0       # Minimum TTL for cache objects in seconds
@@ -106,6 +107,7 @@ Resources:
             QueryStringBehavior: all
           HeadersConfig:
             HeaderBehavior: none
+          EnableAcceptEncodingGzip: true
 
   MetricsCloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
