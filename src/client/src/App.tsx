@@ -43,7 +43,9 @@ const App: React.FC = () => {
               type='number'
               value={value}
               onChange={(e) =>
-                setValue(e.target.value === '' ? 0 : parseInt(e.target.value, 10))
+                setValue(
+                  e.target.value === '' ? 0 : parseInt(e.target.value, 10),
+                )
               }
             />
           </Label>

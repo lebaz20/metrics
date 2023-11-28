@@ -16,7 +16,11 @@ export async function postRecord(
 ): Promise<unknown> {
   try {
     const url = 'https://metrics-demo.com/metric' // Replace with your API endpoint
-    const { data } = await axios.post(url, { name, value, timestamp: new Date().toISOString()})
+    const { data } = await axios.post(url, {
+      name,
+      value,
+      timestamp: new Date().toISOString(),
+    })
     return data
   } catch (error) {
     console.error('Error submitting data:', error)
