@@ -110,7 +110,7 @@ Resources:
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !Sub "${AssetsBucketName}.s3.amazonaws.com"
+          - DomainName: !Sub "${AssetsBucketName}.s3-website-${AWS::Region}.amazonaws.com"
             Id: S3Origin
             S3OriginConfig:
               OriginAccessIdentity: ''
@@ -120,6 +120,9 @@ Resources:
           ViewerProtocolPolicy: allow-all
           CachePolicyId: !Ref MetricsCachePolicy  # Reference the CachePolicy resource
         DefaultRootObject: index.html
+        PriceClass: 'PriceClass_100'
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
 
   MetricsCloudFrontRole:
     Type: 'AWS::IAM::Role'
