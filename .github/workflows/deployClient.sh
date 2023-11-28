@@ -1,6 +1,5 @@
 #!/bin/bash
 
-REGION="your-region"
 index_document="index.html"
 
 # Check if the bucket already exists
