@@ -6,11 +6,6 @@ Parameters:
     Type: String
     Description: User with enough access to create needed resources
 
-  RestApiId:
-    Type: String
-    Description: The api gatway id used in the url
-    Default: metrics-demo-api
-
   LambdaBucketName:
     Type: String
     Description: Name of the S3 bucket for Lambda code
@@ -57,7 +52,6 @@ Resources:
   MetricsApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      RestApiId: !Ref RestApiId # Set a custom RestApiId
       Name: MetricsApiGateway
 
   MetricsApiGatewayResource:

@@ -15,7 +15,18 @@ export async function postRecord(
   value: number,
 ): Promise<unknown> {
   try {
-    const url = 'https://metrics-demo-api.execute-api.eu-west-1.amazonaws.com/prod/metric' // Replace with your API endpoint
+    // Get the current URL search parameters
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // Get the value of a specific query parameter
+    const apiURL = searchParams.get('api-url');
+
+    if (!apiURL) {
+      throw new Error("No API URL")
+    }
+
+    const url = decodeURIComponent(apiURL)
+
     const { data } = await axios.post(url, {
       name,
       value,
