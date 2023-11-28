@@ -20,5 +20,8 @@ export async function postRecord(
     return data
   } catch (error) {
     console.error('Error submitting data:', error)
+    if (error instanceof Error) {
+      return { message: error.message }
+    }
   }
 }
