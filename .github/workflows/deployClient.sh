@@ -7,7 +7,7 @@ if aws s3api head-bucket --bucket "$ASSETS_BUCKET_NAME" 2>/dev/null; then
     echo "Bucket $ASSETS_BUCKET_NAME already exists."
 else
     # Create the S3 bucket
-    aws s3api create-bucket --bucket "$ASSETS_BUCKET_NAME" --region "$REGION"
+    aws s3api create-bucket --bucket "$ASSETS_BUCKET_NAME" --create-bucket-configuration LocationConstraint="$REGION"
     echo "Bucket $ASSETS_BUCKET_NAME created at $REGION."
 
     # Enable static website hosting
