@@ -106,8 +106,6 @@ Resources:
             QueryStringBehavior: all
           HeadersConfig:
             HeaderBehavior: none
-        EnableAcceptEncodingGzip: true
-        EnableAcceptEncodingBrotli: true
 
   MetricsCloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
