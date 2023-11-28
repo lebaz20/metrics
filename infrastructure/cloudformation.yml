@@ -92,6 +92,23 @@ Resources:
       - MetricsApiGatewayMethod
 
   ## Assets CDN
+  MetricsCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        DefaultTTL: 60  # Default Time-To-Live (TTL) for cache objects in seconds
+        MaxTTL: 3600    # Maximum TTL for cache objects in seconds
+        MinTTL: 0       # Minimum TTL for cache objects in seconds
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: all
+          QueryStringsConfig:
+            QueryStringBehavior: all
+          HeadersConfig:
+            HeaderBehavior: none
+        EnableAcceptEncodingGzip: true
+        EnableAcceptEncodingBrotli: true
+
   MetricsCloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
@@ -105,6 +122,7 @@ Resources:
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
           ViewerProtocolPolicy: allow-all
+          CachePolicyId: !Ref MetricsCachePolicy  # Reference the CachePolicy resource
         DefaultRootObject: index.html
 
   MetricsCloudFrontRole:
