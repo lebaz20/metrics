@@ -44,6 +44,7 @@ jobs:
           ./deployAPI.sh
         env:
           LAMBDA_BUCKET_NAME: ${{ vars.LAMBDA_BUCKET_NAME }}
+          REGION: ${{ vars.AWS_REGION }}
 
       - name: Build and upload Client
         run: |
