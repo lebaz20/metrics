@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda'
 import { handler } from '..' // Replace with the correct import path
 
 // Import mock data
-import sampleEvent from './mocks/data/sampleEvent.json'
+import sampleEvent from './fixtures/sampleEvent.json'
 
 // Mock StreamProducer
 jest.mock('../lib/streamProducer/streamProducer', () => {
