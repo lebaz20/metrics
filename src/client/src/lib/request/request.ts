@@ -16,13 +16,13 @@ export async function postRecord(
 ): Promise<unknown> {
   try {
     // Get the current URL search parameters
-    const searchParams = new URLSearchParams(window.location.search);
+    const searchParams = new URLSearchParams(window.location.search)
 
     // Get the value of a specific query parameter
-    const apiURL = searchParams.get('api-url');
+    const apiURL = searchParams.get('api-url')
 
     if (!apiURL) {
-      throw new Error("No API URL")
+      throw new Error('No API URL')
     }
 
     const url = decodeURIComponent(apiURL)
