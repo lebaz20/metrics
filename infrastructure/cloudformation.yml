@@ -80,7 +80,9 @@ Resources:
         Type: AWS_PROXY
         Uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MetricsLambdaFunction.Arn}/invocations
-    DependsOn: MetricsApiGatewayResource
+    DependsOn:
+      - MetricsApiGatewayResource
+      - MetricsLambdaFunction
 
   MetricsApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
