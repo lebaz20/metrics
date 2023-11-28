@@ -59,7 +59,7 @@ jobs:
           cd .github/workflows
           ./runE2ETests.sh
 
-      - name: AWS CloudFormation "Deploy CloudFormation Stack" Action for GitHub Actions
+      - name: Deploy CloudFormation Stack
         # You may pin to the exact commit or the version.
         # uses: aws-actions/aws-cloudformation-github-deploy@023f4ef60d0103d690f31a504cfda9f4f2d66265
         uses: aws-actions/aws-cloudformation-github-deploy@v1
