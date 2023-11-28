@@ -31,4 +31,4 @@ yarn build  # Adjust this command based on your project
 
 # Copy files to the bucket
 cd ../../dist
-aws s3 cp client s3://$ASSETS_BUCKET_NAME/ --region "$REGION" --recursive
+aws s3 cp client s3://$ASSETS_BUCKET_NAME/ --region "$REGION" --recursive --acl public-read
