@@ -2,10 +2,8 @@ name: Deploy
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Triggers the workflow on push but only for the "main" branch
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -37,12 +35,31 @@ jobs:
         with:
           node-version: '18'
 
-      # - name: Build and upload API
-      #   run: |
-      #     cd .github/workflows
-      #     ./deployAPI.sh
-      #   env:
-      #     LAMBDA_BUCKET_NAME: ${{ vars.LAMBDA_BUCKET_NAME }}
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Build and upload API
+        run: |
+          cd .github/workflows
+          ./deployAPI.sh
+        env:
+          LAMBDA_BUCKET_NAME: ${{ vars.LAMBDA_BUCKET_NAME }}
+
+      - name: Build and upload Client
+        run: |
+          cd .github/workflows
+          ./deployClient.sh
+        env:
+          ASSETS_BUCKET_NAME: ${{ vars.ASSETS_BUCKET_NAME }}
+          REGION: ${{ vars.AWS_REGION }}
+
+      - name: Run Cypress Tests
+        run: |
+          cd .github/workflows
+          ./runE2ETests.sh
+        run: |
+          yarn
+          yarn cy:run
 
       - name: AWS CloudFormation "Deploy CloudFormation Stack" Action for GitHub Actions
         # You may pin to the exact commit or the version.
@@ -58,6 +75,7 @@ jobs:
           # The parameters to override in the stack inputs. You can pass a comma-delimited list or a file URL. Comma-delimited list has each entry formatted as <ParameterName>=<ParameterValue> or <ParameterName>="<ParameterValue>,<ParameterValue>". A JSON file can be a local file with a "file://" prefix or remote URL. The file should look like: [ { "ParameterKey": "KeyPairName", "ParameterValue": "MyKey" }]
           parameter-overrides: >-
             LambdaBucketName=${{ vars.LAMBDA_BUCKET_NAME }},
+            AssetsBucketName=${{ vars.ASSETS_BUCKET_NAME }},
             Username=${{ secrets.AWS_USERNAME }},
             ShouldCreateResource=${{ vars.SHOULD_CREATE_RESOURCE }}
           # Indicates whether to execute to the change set or have it reviewed. Default to '0' (will execute the change set)

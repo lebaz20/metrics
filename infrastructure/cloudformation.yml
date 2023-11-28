@@ -136,17 +136,12 @@ Resources:
       - MetricsCustomDomain
 
   ## Assets CDN
-  MetricsAssetsBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: !Ref AssetsBucketName
-
   MetricsCloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !GetAtt MetricsAssetsBucket.DomainName
+          - DomainName: !Sub "${AssetsBucketName}.s3.amazonaws.com"
             Id: S3Origin
             S3OriginConfig:
               OriginAccessIdentity: ''
@@ -160,7 +155,6 @@ Resources:
           SslSupportMethod: sni-only
     DependsOn:
       - MetricsCertificate
-      - MetricsAssetsBucket
 
   MetricsCloudFrontRole:
     Type: 'AWS::IAM::Role'
