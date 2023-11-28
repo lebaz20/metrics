@@ -57,9 +57,6 @@ jobs:
         run: |
           cd .github/workflows
           ./runE2ETests.sh
-        run: |
-          yarn
-          yarn cy:run
 
       - name: AWS CloudFormation "Deploy CloudFormation Stack" Action for GitHub Actions
         # You may pin to the exact commit or the version.
