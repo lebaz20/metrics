@@ -2,6 +2,7 @@
 const path = require('path');
 
 module.exports = {
+  target: 'node',
   entry: './index.ts', // Adjust the entry file accordingly
   output: {
     filename: 'index.js',
