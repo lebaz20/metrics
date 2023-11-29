@@ -143,6 +143,112 @@ Resources:
     DependsOn:
       - MetricsApiGateway
       - MetricsApiGatewayPOSTMethod
+  
+  MetricsRequestLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/apigateway/${MetricsApiGateway}-requests
+    DependsOn:
+      - MetricsApiGateway
+
+  MetricsResponseLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/apigateway/${MetricsApiGateway}-responses
+    DependsOn:
+      - MetricsApiGateway
+
+  MetricsRequestLogRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: RequestLogPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !GetAtt [RequestLogGroup, Arn]
+
+  MetricsResponseLogRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: ResponseLogPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !GetAtt [ResponseLogGroup, Arn]
+
+  MetricsRequestLogGroupRoleAssociation:
+    Type: AWS::Logs::LogGroup
+    DependsOn: RequestLogRole
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/apigateway/${MetricsApiGateway}-requests
+      RoleArn: !GetAtt [RequestLogRole, Arn]
+    DependsOn:
+      - MetricsApiGateway
+
+  MetricsResponseLogGroupRoleAssociation:
+    Type: AWS::Logs::LogGroup
+    DependsOn: ResponseLogRole
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/apigateway/${MetricsApiGateway}-responses
+      RoleArn: !GetAtt [ResponseLogRole, Arn]
+    DependsOn:
+      - MetricsApiGateway
+
+  MetricsApiGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: prod
+      RestApiId: !Ref MetricsApiGateway
+      DeploymentId: !Ref MetricsApiGatewayDeployment
+      MethodSettings:
+        - HttpMethod: '*'
+          ResourcePath: '/*'
+          LoggingLevel: INFO
+          DataTraceEnabled: true
+          MetricsEnabled: true
+          LogLevel: INFO
+          CachingEnabled: false
+    DependsOn:
+      - MetricsApiGateway
+      - MetricsApiGatewayDeployment
+      - MetricsResponseLogGroupRoleAssociation
+      - MetricsRequestLogGroupRoleAssociation
+      - MetricsRequestLogGroup
+      - MetricsResponseLogGroup
 
   ## Assets CDN
   MetricsCachePolicy:
