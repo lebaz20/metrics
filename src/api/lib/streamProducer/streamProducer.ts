@@ -15,18 +15,18 @@ export class StreamProducer {
    * Puts a record into the specified Kinesis stream.
    * @param data - The data to be stored in the record.
    * @param partitionKey - The partition key for the record.
-   * @param streamArn - The ARN of the Kinesis stream.
+   * @param streamName - The name of the Kinesis stream.
    * @returns A promise that resolves with the result of the putRecord operation.
    */
   static async putRecord(
     data: KinesisStreamRecordDataPayload,
     partitionKey: string,
-    streamArn: string,
+    streamName: string,
   ): Promise<PromiseResult<AWS.Kinesis.PutRecordOutput, AWS.AWSError>> {
     const params: AWS.Kinesis.PutRecordInput = {
       Data: JSON.stringify(data),
       PartitionKey: partitionKey,
-      StreamName: streamArn,
+      StreamName: streamName,
     }
 
     return this.kinesis.putRecord(params).promise()

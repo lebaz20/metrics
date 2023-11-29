@@ -67,11 +67,38 @@ Resources:
       PathPart: metric
     DependsOn: MetricsApiGateway
 
-  MetricsApiGatewayMethod:
+  MetricsApiGatewayOptionsMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      ResourceId: !Ref MyApiGatewayResource
+      RestApiId: !Ref MyApiGateway
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  MetricsApiGatewayPOSTMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
-      HttpMethod: ANY
+      HttpMethod: POST
       ResourceId: !Ref MetricsApiGatewayResource
       RestApiId: !Ref MetricsApiGateway
       Integration:
@@ -79,9 +106,24 @@ Resources:
         Type: AWS_PROXY
         Uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MetricsLambdaFunction.Arn}/invocations
+        RequestParameters:
+          integration.request.header.Content-Type: "'application/json'"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ''
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        PassthroughBehavior: WHEN_NO_MATCH
       MethodResponses:
         - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
           ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: "'*'"  # Note the single quotes around '*'
         - StatusCode: 400
           ResponseParameters:
@@ -100,7 +142,7 @@ Resources:
       StageName: prod
     DependsOn:
       - MetricsApiGateway
-      - MetricsApiGatewayMethod
+      - MetricsApiGatewayPOSTMethod
 
   ## Assets CDN
   MetricsCachePolicy:
@@ -173,7 +215,7 @@ Resources:
       Timeout: 10
       Environment:
         Variables:
-          KINESIS_STREAM_ARN: !GetAtt MetricsRawKinesisStream.Arn
+          KINESIS_STREAM_NAME: RawMetricsKinesisStream
     DependsOn:
       - MetricsLambdaExecutionRole
       - MetricsRawKinesisStream

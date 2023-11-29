@@ -22,7 +22,7 @@ describe('Metrics Lambda Function Test', () => {
     } as any // 'as any' to avoid TypeScript complaints for simplicity
 
     // Mock the environment variable
-    process.env.KINESIS_STREAM_ARN = 'YourKinesisStreamARN'
+    process.env.KINESIS_STREAM_NAME = 'YourKinesisStreamName'
 
     // Execute the Lambda handler
     const result = await handler(event)

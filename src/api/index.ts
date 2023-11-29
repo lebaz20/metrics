@@ -11,10 +11,10 @@ export const handler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   try {
-    const { KINESIS_STREAM_ARN } = process.env
+    const { KINESIS_STREAM_NAME } = process.env
 
-    if (!KINESIS_STREAM_ARN) {
-      throw new Error('KINESIS_STREAM_ARN environment variable is not set.')
+    if (!KINESIS_STREAM_NAME) {
+      throw new Error('KINESIS_STREAM_NAME environment variable is not set.')
     }
 
     const { body } = event
@@ -24,7 +24,7 @@ export const handler = async (
     const result = await StreamProducer.putRecord(
       kinesisData,
       kinesisData.name,
-      KINESIS_STREAM_ARN,
+      KINESIS_STREAM_NAME,
     )
 
     console.log('Record successfully put into the Kinesis stream:', result)
