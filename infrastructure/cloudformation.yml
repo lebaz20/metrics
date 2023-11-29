@@ -72,8 +72,8 @@ Resources:
     Properties:
       AuthorizationType: NONE
       HttpMethod: OPTIONS
-      ResourceId: !Ref MyApiGatewayResource
-      RestApiId: !Ref MyApiGateway
+      ResourceId: !Ref MetricsApiGatewayResource
+      RestApiId: !Ref MetricsApiGateway
       Integration:
         IntegrationResponses:
           - StatusCode: 200
