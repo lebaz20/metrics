@@ -66,6 +66,7 @@ To run e2e tests: Run `yarn e2e` at the root directory.
 
 ## Future Enhancements
 - Add live monitoring for client-side to catch front-end errors.
+- Dynamically path API domain from AWS CloudFormation to Client Build.
 - Add authentication layer to secure communication.
 - Split infrastructure for more independence between front-end and back-end.
 - Optimize the balance between data reliability vs cost optimization through customizing read data prep mechanisms. 

@@ -110,7 +110,7 @@ Resources:
     Properties:
       DistributionConfig:
         Origins:
-          - DomainName: !Sub "${AssetsBucketName}.s3-website.${AWS::Region}.amazonaws.com"
+          - DomainName: !Sub "${AssetsBucketName}.s3.amazonaws.com"
             Id: S3Origin
             S3OriginConfig:
               OriginAccessIdentity: ''
