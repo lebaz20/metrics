@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
-      "target": "es2022",
+      "target": "ESNext",
+      "lib": ["ESNext"],
       "module": "commonjs",
       "strict": true,
       "esModuleInterop": true,
@@ -10,6 +11,6 @@
       "outDir": "../../dist/api"
     },
     "include": ["**/*.ts"],
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules", "**/*.test.ts"]
 }
   
