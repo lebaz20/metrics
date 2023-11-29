@@ -1,6 +1,7 @@
 {
   "name": "metrics",
   "version": "1.0.0",
+  "license": "MIT",
   "scripts": {
     "doc": "node docs/api/generateDocs.js && node docs/api/serveDocs.js",
     "e2e": "cypress open",

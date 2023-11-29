@@ -1,6 +1,7 @@
 {
   "name": "metric-lambda-function",
   "version": "1.0.0",
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
     "dry-run": "node ../../dist/api/bundle.js",
