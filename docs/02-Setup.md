@@ -65,8 +65,9 @@ To commit code changes: Run `yarn gitmoji -c` at the root directory and it will 
 To run e2e tests: Run `yarn e2e` at the root directory.
 
 ## Future Enhancements
+- Run E2E tests after deployment and rollback on failure.
 - Add live monitoring for client-side to catch front-end errors.
-- Dynamically path API domain from AWS CloudFormation to Client Build.
+- Dynamically pass API URL from AWS CloudFormation to Client Build.
 - Add authentication layer to secure communication.
 - Split infrastructure for more independence between front-end and back-end.
 - Optimize the balance between data reliability vs cost optimization through customizing read data prep mechanisms. 
