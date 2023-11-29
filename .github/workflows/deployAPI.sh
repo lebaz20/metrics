@@ -15,5 +15,6 @@ yarn build  # Adjust this command based on your project
 
 # Copy files to the bucket
 cd ../../dist/api
-zip -r lambda-code.zip index.js
-aws s3 cp lambda-code.zip s3://$LAMBDA_BUCKET_NAME/lambda-code.zip --region "$REGION"
+zip -r lambda-code-$LAMBDA_CODE_VERSION.zip ./
+aws s3 rm s3://$LAMBDA_BUCKET_NAME --recursive
+aws s3 cp lambda-code-$LAMBDA_CODE_VERSION.zip s3://$LAMBDA_BUCKET_NAME/lambda-code-$LAMBDA_CODE_VERSION.zip --region "$REGION"

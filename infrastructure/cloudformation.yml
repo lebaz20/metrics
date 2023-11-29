@@ -11,6 +11,11 @@ Parameters:
     Description: Name of the S3 bucket for Lambda code
     Default: metrics-lambda-code-bucket
 
+  LambdaCodeVersion:
+    Type: String
+    Description: Version of Lambda code to force redeployment
+    Default: v2 # Update this parameter when forcing redeployment
+
   AssetsBucketName:
     Type: String
     Description: Name of the S3 bucket for Assets
@@ -164,7 +169,7 @@ Resources:
       Role: !GetAtt MetricsLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Ref LambdaBucketName
-        S3Key: lambda-code.zip  # Replace with the actual zip file name in your S3 bucket
+        S3Key: !Sub "lambda-code-${LambdaCodeVersion}.zip" # Use the parameter here
       Timeout: 10
       Environment:
         Variables:

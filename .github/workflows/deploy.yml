@@ -44,6 +44,7 @@ jobs:
           ./deployAPI.sh
         env:
           LAMBDA_BUCKET_NAME: ${{ vars.LAMBDA_BUCKET_NAME }}
+          LAMBDA_CODE_VERSION: ${{ github.run_attempt }}
           REGION: ${{ vars.AWS_REGION }}
 
       - name: Build and upload Client
@@ -75,7 +76,8 @@ jobs:
             LambdaBucketName=${{ vars.LAMBDA_BUCKET_NAME }},
             AssetsBucketName=${{ vars.ASSETS_BUCKET_NAME }},
             Username=${{ secrets.AWS_USERNAME }},
-            ShouldCreateResource=${{ vars.SHOULD_CREATE_RESOURCE }}
+            ShouldCreateResource=${{ vars.SHOULD_CREATE_RESOURCE }},
+            LambdaCodeVersion=${{ github.run_attempt }}
           # Indicates whether to execute to the change set or have it reviewed. Default to '0' (will execute the change set)
           no-execute-changeset: # optional, default is 0
           # Indicates whether to delete to a failed change set. Default to '0' (will delete the failed changeset)
