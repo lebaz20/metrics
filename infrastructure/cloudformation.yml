@@ -74,6 +74,16 @@ Resources:
         Type: AWS_PROXY
         Uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MetricsLambdaFunction.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: "'*'"  # Note the single quotes around '*'
+        - StatusCode: 400
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: "'*'"  # Note the single quotes around '*'
+        - StatusCode: 500
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: "'*'"  # Note the single quotes around '*'
     DependsOn:
       - MetricsApiGatewayResource
       - MetricsLambdaFunction
@@ -162,6 +172,15 @@ Resources:
     DependsOn:
       - MetricsLambdaExecutionRole
       - MetricsRawKinesisStream
+
+  MetricsApiGatewayInvoke:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt MetricsLambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+    DependsOn:
+      - MetricsLambdaFunction
 
   MetricsLambdaExecutionRole:
     Type: AWS::IAM::Role
