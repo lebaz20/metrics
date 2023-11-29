@@ -182,7 +182,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - !GetAtt [RequestLogGroup, Arn]
+                  - !GetAtt [MetricsRequestLogGroup, Arn]
 
   MetricsResponseLogRole:
     Type: AWS::IAM::Role
@@ -206,27 +206,27 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - !GetAtt [ResponseLogGroup, Arn]
+                  - !GetAtt [MetricsResponseLogGroup, Arn]
 
   MetricsRequestLogGroupRoleAssociation:
     Type: AWS::Logs::LogGroup
-    DependsOn: RequestLogRole
     Properties:
       LogGroupName:
         Fn::Sub: /aws/apigateway/${MetricsApiGateway}-requests
-      RoleArn: !GetAtt [RequestLogRole, Arn]
+      RoleArn: !GetAtt [MetricsRequestLogRole, Arn]
     DependsOn:
       - MetricsApiGateway
+      - MetricsRequestLogRole
 
   MetricsResponseLogGroupRoleAssociation:
     Type: AWS::Logs::LogGroup
-    DependsOn: ResponseLogRole
     Properties:
       LogGroupName:
         Fn::Sub: /aws/apigateway/${MetricsApiGateway}-responses
-      RoleArn: !GetAtt [ResponseLogRole, Arn]
+      RoleArn: !GetAtt [MetricsResponseLogRole, Arn]
     DependsOn:
       - MetricsApiGateway
+      - MetricsResponseLogRole
 
   MetricsApiGatewayStage:
     Type: AWS::ApiGateway::Stage
