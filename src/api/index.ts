@@ -10,6 +10,7 @@ import { StreamProducer } from './lib/streamProducer'
 export const handler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
+  let response: APIGatewayProxyResult
   try {
     const { KINESIS_STREAM_NAME } = process.env
 
@@ -29,7 +30,7 @@ export const handler = async (
 
     console.log('Record successfully put into the Kinesis stream:', result)
 
-    return {
+    response = {
       statusCode: 200,
       body: JSON.stringify('Record put into Kinesis successfully.'),
     }
@@ -40,7 +41,7 @@ export const handler = async (
     if (error instanceof Error) {
       errorMessage = error.message
     }
-    return {
+    response = {
       statusCode: 500,
       body: JSON.stringify({
         message: 'Error handling the request.',
@@ -48,4 +49,10 @@ export const handler = async (
       }),
     }
   }
+
+  response.headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*', // Allow any origin
+  }
+  return response
 }
