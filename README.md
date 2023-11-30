@@ -20,12 +20,12 @@ A Frontend + Backend application that allows you to post and visualize metrics.
 #### Actual Stack
 ![](https://drive.google.com/uc?id=1pT9YBHwZr-3JFQTyfol04A9L7j2hJxUa)
 
-The iterative thinking process that got us here: [Architecture](./docs/01-Architecture.md).
+The [Iterative thinking process](./docs/01-Architecture.md) that got us here.
 
-[Decisions and constraints](./docs/02-Decisions-Constraints.md) are listed here
+- [Decisions and constraints](./docs/02-Decisions-Constraints.md).
 
 ------------
 
 ## Setup
 
-Check installation steps: [Setup](./docs/03-Setup.md).
+Check setup details like installation steps [here](./docs/03-Setup.md).
