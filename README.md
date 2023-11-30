@@ -22,8 +22,10 @@ A Frontend + Backend application that allows you to post and visualize metrics.
 
 The iterative thinking process that got us here: [Architecture](./docs/01-Architecture.md).
 
+[Decisions and constraints](./docs/02-Decisions-Constraints.md) are listed here
+
 ------------
 
 ## Setup
 
-Check installation steps: [Setup](./docs/02-Setup.md).
+Check installation steps: [Setup](./docs/03-Setup.md).
