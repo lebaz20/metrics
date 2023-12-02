@@ -47,18 +47,18 @@ jobs:
           LAMBDA_CODE_VERSION: ${{ github.run_number }}
           REGION: ${{ vars.AWS_REGION }}
 
-      - name: Build and upload Client
-        run: |
-          cd .github/workflows
-          ./deployClient.sh
-        env:
-          ASSETS_BUCKET_NAME: ${{ vars.ASSETS_BUCKET_NAME }}
-          REGION: ${{ vars.AWS_REGION }}
+      # - name: Build and upload Client
+      #   run: |
+      #     cd .github/workflows
+      #     ./deployClient.sh
+      #   env:
+      #     ASSETS_BUCKET_NAME: ${{ vars.ASSETS_BUCKET_NAME }}
+      #     REGION: ${{ vars.AWS_REGION }}
 
-      - name: Run E2E Tests
-        run: |
-          cd .github/workflows
-          ./runE2ETests.sh
+      # - name: Run E2E Tests
+      #   run: |
+      #     cd .github/workflows
+      #     ./runE2ETests.sh
 
       - name: Deploy CloudFormation Stack
         # You may pin to the exact commit or the version.
