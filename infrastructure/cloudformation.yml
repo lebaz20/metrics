@@ -406,9 +406,6 @@ Resources:
               - MeasureValueType: DOUBLE
                 SourceColumn: measure_value
             TargetMultiMeasureName: measure_value
-          DimensionMappings:
-            - Name: measure_name
-              DimensionValueType: VARCHAR
     DependsOn:
       - MetricsTimestreamDatabase
       - MetricsScheduledTimeStreamQueryExecutionRole
@@ -498,9 +495,6 @@ Resources:
               - MeasureValueType: DOUBLE
                 SourceColumn: measure_value
             TargetMultiMeasureName: measure_value
-          DimensionMappings:
-            - Name: measure_name
-              DimensionValueType: VARCHAR
     DependsOn:
       - MetricsTimestreamDatabase
       - MetricsScheduledTimeStreamQueryExecutionRole
