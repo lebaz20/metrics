@@ -382,7 +382,7 @@ Resources:
         SELECT
           BIN(time, 1h) AS "time",
           "measure_name",
-          AVG(measure_value::double) AS "measure_value::double"
+          AVG(measure_value) AS "measure_value"
         FROM
           ${TimestreamDatabaseName}.metrics_min
         GROUP BY
@@ -404,8 +404,8 @@ Resources:
           MultiMeasureMappings:
             MultiMeasureAttributeMappings:
               - MeasureValueType: DOUBLE
-                SourceColumn: measure_value::double
-            TargetMultiMeasureName: measure_value::double
+                SourceColumn: measure_value
+            TargetMultiMeasureName: measure_value
           DimensionMappings:
             - Name: measure_name
               DimensionValueType: VARCHAR
@@ -474,7 +474,7 @@ Resources:
         SELECT
           BIN(time, 1d) AS "time",
           "measure_name",
-          AVG(measure_value::double) AS "measure_value::double"
+          AVG(measure_value) AS "measure_value"
         FROM
           ${TimestreamDatabaseName}.metrics_hr
         GROUP BY
@@ -496,8 +496,8 @@ Resources:
           MultiMeasureMappings:
             MultiMeasureAttributeMappings:
               - MeasureValueType: DOUBLE
-                SourceColumn: measure_value::double
-            TargetMultiMeasureName: measure_value::double
+                SourceColumn: measure_value
+            TargetMultiMeasureName: measure_value
           DimensionMappings:
             - Name: measure_name
               DimensionValueType: VARCHAR
