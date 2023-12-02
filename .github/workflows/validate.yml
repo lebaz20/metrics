@@ -59,7 +59,7 @@ jobs:
           pwd
       - name: Change directory to root2
         run: |
-          ls
+          ls -al
 
       - name: Install Client dependencies
         working-directory: client
