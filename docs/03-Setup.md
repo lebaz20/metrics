@@ -27,6 +27,9 @@ The API endpoint needed to post metrics
 To generate docs: Run `yarn doc` from root directory then open [API Docs](http://localhost:3000/api-docs).
 ![](https://drive.google.com/uc?id=1UtfAgdaVUk-DerwcLWWlt91lXRLmg4WQ)
 
+![](https://drive.google.com/uc?id=1G_P9PCd7pj0CAZjCFBpOb2U3fS0w-Zou)
+- Check [Postman Collection](https://www.postman.com/lebaz20/workspace/metrics/collection/1283527-0800a457-8f2b-4bda-8aa2-c91530923091?action=share&creator=1283527).
+
 ### Client
 The Frontend needed to insert metrics
 #### Stack
@@ -51,6 +54,8 @@ For more info check: [Client README](./../src/client/README.md).
 
 ![](https://drive.google.com/uc?id=1mPzUe8-eJCg0tQ6z7MOxwdl1UG7DDPgg)
 
+![](https://drive.google.com/uc?id=1YJYpq0ceTPsSt_lQXwUQnnHfdBOQ2PmK)
+
 ### Deployment
 #### Stack
 - Github Actions
@@ -63,6 +68,8 @@ To commit code changes: Run `yarn gitmoji -c` at the root directory and it will 
 
 #### End-to-end tests
 To run e2e tests: Run `yarn e2e` at the root directory.
+
+![](https://drive.google.com/uc?id=1F8s32sozr_ggUoOWkeRUCAFBID6qpMjm)
 
 ## Future Enhancements
 - Run E2E tests after deployment and rollback on failure.
