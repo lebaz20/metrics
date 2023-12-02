@@ -7,7 +7,7 @@ import { StreamProducer } from './lib/streamProducer'
  * @param event - The API Gateway proxy event.
  * @returns A promise that resolves with the API Gateway proxy result.
  */
-export const handler = async (
+export const postRecord = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
   let response: APIGatewayProxyResult

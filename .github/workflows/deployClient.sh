@@ -25,10 +25,10 @@ else
     echo "Bucket policy configured for public access."
 fi
 
-cd ../../src/client/
+cd ../../client/
 yarn install
 yarn build  # Adjust this command based on your project
 
 # Copy files to the bucket
-cd ../../dist
+cd ../dist
 aws s3 cp client s3://$ASSETS_BUCKET_NAME/ --region "$REGION" --recursive --acl public-read

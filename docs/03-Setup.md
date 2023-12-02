@@ -13,7 +13,7 @@ The API endpoint needed to post metrics
 - Webpack
 - Swagger
 
-1. `cd src/api`
+1. `cd api`
 2. `yarn` to install api dependencies
 3. `yarn lint` to run static anaylsis tests
 4. `yarn lint:fix` to fix static errors if possible
@@ -39,7 +39,7 @@ The Frontend needed to insert metrics
 - Eslint
 - Vite
 
-1. `cd src/client`
+1. `cd client`
 2. `yarn` to install api dependencies
 3. `yarn lint` to run static anaylsis tests
 4. `yarn lint:fix` to fix static errors if possible

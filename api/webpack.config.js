@@ -7,7 +7,7 @@ module.exports = {
   entry: './index.ts', // Adjust the entry file accordingly
   output: {
     filename: 'index.js',
-    path: path.resolve(__dirname, '../../dist/api'),
+    path: path.resolve(__dirname, '../dist/api'),
     library: {
       type: "commonjs2",
     },

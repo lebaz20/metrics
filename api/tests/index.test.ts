@@ -1,11 +1,11 @@
 import { APIGatewayProxyEvent } from 'aws-lambda'
-import { handler } from '..' // Replace with the correct import path
+import { postRecord } from '..' // Replace with the correct import path
 
 // Import mock data
 import sampleEvent from './fixtures/sampleEvent.json'
 
 // Mock StreamProducer
-jest.mock('../lib/streamProducer/streamProducer', () => {
+jest.mock('../src/lib/streamProducer/streamProducer', () => {
   return {
     StreamProducer: {
       putRecord: jest.fn(() => Promise.resolve('Mocked result')),
@@ -13,7 +13,7 @@ jest.mock('../lib/streamProducer/streamProducer', () => {
   }
 })
 
-describe('Metrics Lambda Function Test', () => {
+describe('Metrics postRecord Lambda Function Test', () => {
   it('should successfully handle the request', async () => {
     // Define a sample event for testing
     const event: APIGatewayProxyEvent = {
@@ -25,7 +25,7 @@ describe('Metrics Lambda Function Test', () => {
     process.env.KINESIS_STREAM_NAME = 'YourKinesisStreamName'
 
     // Execute the Lambda handler
-    const result = await handler(event)
+    const result = await postRecord(event)
 
     // Assert the result
     expect(result.statusCode).toBe(200)
@@ -42,7 +42,7 @@ describe('Metrics Lambda Function Test', () => {
     } as any // 'as any' to avoid TypeScript complaints for simplicity
 
     // Execute the Lambda handler
-    const result = await handler(event)
+    const result = await postRecord(event)
 
     // Assert the result
     expect(result.statusCode).toBe(500)

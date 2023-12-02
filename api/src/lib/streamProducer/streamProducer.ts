@@ -1,5 +1,5 @@
-import type { KinesisStreamRecordDataPayload } from '../streamProducer/streamProducer.types'
-import * as AWS from 'aws-sdk'
+import type { KinesisStreamRecordDataPayload } from './streamProducer.types'
+import { AWSError, Kinesis } from 'aws-sdk'
 import { PromiseResult } from 'aws-sdk/lib/request'
 
 // Set the region for the AWS SDK
@@ -9,7 +9,7 @@ import { PromiseResult } from 'aws-sdk/lib/request'
  * Handles interactions with the AWS Kinesis service.
  */
 export class StreamProducer {
-  private static kinesis = new AWS.Kinesis()
+  private static kinesis = new Kinesis()
 
   /**
    * Puts a record into the specified Kinesis stream.
@@ -22,8 +22,9 @@ export class StreamProducer {
     data: KinesisStreamRecordDataPayload,
     partitionKey: string,
     streamName: string,
-  ): Promise<PromiseResult<AWS.Kinesis.PutRecordOutput, AWS.AWSError>> {
-    const params: AWS.Kinesis.PutRecordInput = {
+  ): Promise<PromiseResult<Kinesis.PutRecordOutput, AWSError>> {
+    data.raw = 'true'
+    const params: Kinesis.PutRecordInput = {
       Data: JSON.stringify(data),
       PartitionKey: partitionKey,
       StreamName: streamName,

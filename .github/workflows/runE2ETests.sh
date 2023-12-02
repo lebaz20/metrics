@@ -3,9 +3,9 @@
 cd ../../
 yarn install
 
-cd src/client/
+cd client/
 yarn install
 yarn preview & # Adjust this command based on your project
 
-cd ../../
+cd ../
 yarn e2e:ci
