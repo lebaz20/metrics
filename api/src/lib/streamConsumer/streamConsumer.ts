@@ -53,12 +53,6 @@ export class StreamConsumer {
       TableName: tableName,
       Records: [
         {
-          Dimensions: [
-            {
-              Name: 'name',
-              Value: 'value',
-            },
-          ],
           MeasureName: data.name,
           MeasureValue: data.value.toString(),
           MeasureValueType: 'DOUBLE',
