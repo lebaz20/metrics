@@ -105,7 +105,7 @@ Resources:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
         Uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MetricsLambdaFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MetricsPostRecordLambdaFunction.Arn}/invocations
         RequestParameters:
           integration.request.header.Content-Type: "'application/json'"
         IntegrationResponses:
@@ -133,7 +133,7 @@ Resources:
             method.response.header.Access-Control-Allow-Origin: "'*'"  # Note the single quotes around '*'
     DependsOn:
       - MetricsApiGatewayResource
-      - MetricsLambdaFunction
+      - MetricsPostRecordLambdaFunction
 
   MetricsApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -202,12 +202,12 @@ Resources:
                 Resource: !Sub 'arn:aws:s3:::${AssetsBucketName}/*'
 
   ## Metrics lambda function
-  MetricsLambdaFunction:
+  MetricsPostRecordLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: MetricsLambdaFunction
+      FunctionName: MetricsPostRecordLambdaFunction
       Runtime: nodejs18.x
-      Handler: index.handler
+      Handler: index.postRecord
       Role: !GetAtt MetricsLambdaExecutionRole.Arn
       Code:
         S3Bucket: !Ref LambdaBucketName
@@ -220,14 +220,38 @@ Resources:
       - MetricsLambdaExecutionRole
       - MetricsRawKinesisStream
 
+  MetricsConsumeStreamLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: MetricsConsumeStreamLambdaFunction
+      Runtime: nodejs18.x
+      Handler: index.consumeStream
+      Role: !GetAtt MetricsLambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaBucketName
+        S3Key: !Sub "lambda-code-${LambdaCodeVersion}.zip" # Use the parameter here
+      Timeout: 60
+      Environment:
+        Variables:
+          TIMESTREAM_DATABASE: !Ref TimestreamDatabaseName
+          TIMESTREAM_RAW_TABLE: metrics_raw
+          TIMESTREAM_MIN_TABLE: metrics_min
+    DependsOn:
+      - MetricsLambdaExecutionRole
+      - MetricsTimestreamDatabase
+      - MetricsRawTable
+      - MetricsMinTable
+      - MetricsHrTable
+      - MetricsDayTable
+
   MetricsApiGatewayInvoke:
     Type: 'AWS::Lambda::Permission'
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt MetricsLambdaFunction.Arn
+      FunctionName: !GetAtt MetricsPostRecordLambdaFunction.Arn
       Principal: apigateway.amazonaws.com
     DependsOn:
-      - MetricsLambdaFunction
+      - MetricsPostRecordLambdaFunction
 
   MetricsLambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -259,9 +283,27 @@ Resources:
                 Action:
                   - kinesis:PutRecord
                   - kinesis:PutRecords
-                Resource: !GetAtt MetricsRawKinesisStream.Arn
+                  - kinesis:GetRecords
+                  - kinesis:GetShardIterator
+                  - kinesis:DescribeStream
+                Resource:
+                  - !GetAtt MetricsRawKinesisStream.Arn
+                  - !GetAtt MetricsProcessedKinesisStream.Arn
+              - Effect: Allow
+                Action:
+                  - timestream:WriteRecords
+                Resource:
+                  - !GetAtt MetricsRawTable.Arn
+                  - !GetAtt MetricsMinTable.Arn
+                  - !GetAtt MetricsHrTable.Arn
+                  - !GetAtt MetricsDayTable.Arn
     DependsOn:
       - MetricsRawKinesisStream
+      - MetricsProcessedKinesisStream
+      - MetricsRawTable
+      - MetricsMinTable
+      - MetricsHrTable
+      - MetricsDayTable
 
   ## TimeStream Database
   MetricsTimeStreamBucket:
@@ -470,12 +512,19 @@ Resources:
       Name: ProcessedMetricsKinesisStream
       ShardCount: 1
 
-  # MetricsKinesisEventSource:
-  #   Type: AWS::Lambda::EventSourceMapping
-  #   Properties:
-  #     EventSourceArn: !GetAtt MetricsRawKinesisStream.Arn
-  #     FunctionName: !GetAtt MetricsLambdaFunction.Arn
-  #     StartingPosition: LATEST
+  MetricsRawKinesisEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt MetricsRawKinesisStream.Arn
+      FunctionName: !GetAtt MetricsConsumeStreamLambdaFunction.Arn
+      BatchSize: 10
+
+  MetricsProcessedKinesisEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt MetricsProcessedKinesisStream.Arn
+      FunctionName: !GetAtt MetricsConsumeStreamLambdaFunction.Arn
+      BatchSize: 10
 
   MetricsKinesisAnalyticsApplication:
     Type: AWS::KinesisAnalyticsV2::Application
