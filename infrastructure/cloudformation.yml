@@ -381,12 +381,12 @@ Resources:
       QueryString: !Sub |
         SELECT
           BIN(time, 1h) AS "time",
-          "name",
-          AVG(value) AS "value"
+          "measure_name",
+          AVG(measure_value::double) AS "measure_value::double"
         FROM
           ${TimestreamDatabaseName}.metrics_min
         GROUP BY
-          "name", BIN(time, 1h)
+          "measure_name", BIN(time, 1h)
       ScheduleConfiguration:
         ScheduleExpression: rate(60 minutes)
       ScheduledQueryExecutionRoleArn: !GetAtt MetricsScheduledTimeStreamQueryExecutionRole.Arn
@@ -404,10 +404,10 @@ Resources:
           MultiMeasureMappings:
             MultiMeasureAttributeMappings:
               - MeasureValueType: DOUBLE
-                SourceColumn: value
-            TargetMultiMeasureName: value
+                SourceColumn: measure_value::double
+            TargetMultiMeasureName: measure_value::double
           DimensionMappings:
-            - Name: name
+            - Name: measure_name
               DimensionValueType: VARCHAR
     DependsOn:
       - MetricsTimestreamDatabase
@@ -473,12 +473,12 @@ Resources:
       QueryString: !Sub |
         SELECT
           BIN(time, 1d) AS "time",
-          "name",
-          AVG(value) AS "value"
+          "measure_name",
+          AVG(measure_value::double) AS "measure_value::double"
         FROM
           ${TimestreamDatabaseName}.metrics_hr
         GROUP BY
-          "name", BIN(time, 1d)
+          "measure_name", BIN(time, 1d)
       ScheduleConfiguration:
         ScheduleExpression: rate(24 hours)
       ScheduledQueryExecutionRoleArn: !GetAtt MetricsScheduledTimeStreamQueryExecutionRole.Arn
@@ -496,10 +496,10 @@ Resources:
           MultiMeasureMappings:
             MultiMeasureAttributeMappings:
               - MeasureValueType: DOUBLE
-                SourceColumn: value
-            TargetMultiMeasureName: value
+                SourceColumn: measure_value::double
+            TargetMultiMeasureName: measure_value::double
           DimensionMappings:
-            - Name: name
+            - Name: measure_name
               DimensionValueType: VARCHAR
     DependsOn:
       - MetricsTimestreamDatabase
