@@ -35,12 +35,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Build and upload Client
-        working-directory: .github/workflows
-        run: ./deployClient.sh
-        env:
-          ASSETS_BUCKET_NAME: ${{ vars.ASSETS_BUCKET_NAME }}
-          REGION: ${{ vars.AWS_REGION }}
+      # - name: Build and upload Client
+      #   working-directory: .github/workflows
+      #   run: ./deployClient.sh
+      #   env:
+      #     ASSETS_BUCKET_NAME: ${{ vars.ASSETS_BUCKET_NAME }}
+      #     REGION: ${{ vars.AWS_REGION }}
       - name: Run E2E Tests
         working-directory: .github/workflows
         run: ./runE2ETests.sh
