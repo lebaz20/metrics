@@ -55,7 +55,9 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Change directory to root
-        run: cd $GITHUB_WORKSPACE
+        run: |
+          pwd
+          ls
 
       - name: Install Client dependencies
         working-directory: client
