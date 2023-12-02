@@ -1,5 +1,9 @@
 # Metrics
+
+[![Deployment](https://github.com/lebaz20/metrics/actions/workflows/deploy.yml/badge.svg)](https://github.com/lebaz20/metrics/actions/workflows/deploy.yml)
+
 A Frontend + Backend application that allows you to post and visualize metrics.
+
 
 ## Requirements
 ### Functional Requirements
