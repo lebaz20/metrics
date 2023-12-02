@@ -93,6 +93,9 @@ Resources:
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
+    DependsOn:
+      - MetricsApiGatewayResource
+      - MetricsApiGateway
 
   MetricsApiGatewayPOSTMethod:
     Type: AWS::ApiGateway::Method
@@ -133,6 +136,7 @@ Resources:
             method.response.header.Access-Control-Allow-Origin: "'*'"  # Note the single quotes around '*'
     DependsOn:
       - MetricsApiGatewayResource
+      - MetricsApiGateway
       - MetricsPostRecordLambdaFunction
 
   MetricsApiGatewayDeployment:
@@ -180,6 +184,8 @@ Resources:
         PriceClass: 'PriceClass_100'
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
+    DependsOn:
+      - MetricsCachePolicy
 
   MetricsCloudFrontRole:
     Type: 'AWS::IAM::Role'
@@ -518,6 +524,10 @@ Resources:
       EventSourceArn: !GetAtt MetricsRawKinesisStream.Arn
       FunctionName: !GetAtt MetricsConsumeStreamLambdaFunction.Arn
       BatchSize: 10
+      StartingPosition: LATEST
+    DependsOn:
+      - MetricsRawKinesisStream
+      - MetricsConsumeStreamLambdaFunction
 
   MetricsProcessedKinesisEventSource:
     Type: AWS::Lambda::EventSourceMapping
@@ -525,6 +535,10 @@ Resources:
       EventSourceArn: !GetAtt MetricsProcessedKinesisStream.Arn
       FunctionName: !GetAtt MetricsConsumeStreamLambdaFunction.Arn
       BatchSize: 10
+      StartingPosition: LATEST
+    DependsOn:
+      - MetricsProcessedKinesisStream
+      - MetricsConsumeStreamLambdaFunction
 
   MetricsKinesisAnalyticsApplication:
     Type: AWS::KinesisAnalyticsV2::Application
@@ -644,6 +658,11 @@ Resources:
             - "quicksight:CancelIngestion"
             - "quicksight:UpdateAnalysis"
             - "quicksight:QueryAnalysis"
+    DependsOn:
+      - MetricsRawTimestreamDataSet
+      - MetricsAvgMinTimestreamDataSet
+      - MetricsAvgHrTimestreamDataSet
+      - MetricsAvgDayTimestreamDataSet
 
   MetricsQuickSightTemplate:
     Type: 'AWS::QuickSight::Template'
