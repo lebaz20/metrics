@@ -54,6 +54,8 @@ For more info check: [Client README](./../src/client/README.md).
 
 ![](https://drive.google.com/uc?id=1mPzUe8-eJCg0tQ6z7MOxwdl1UG7DDPgg)
 
+![](https://drive.google.com/uc?id=15DY5L8Zh5qNPilUycN0Lxy166PsYT1KO)
+
 ![](https://drive.google.com/uc?id=1YJYpq0ceTPsSt_lQXwUQnnHfdBOQ2PmK)
 
 ### Deployment
@@ -65,6 +67,16 @@ For more info check: [Client README](./../src/client/README.md).
 
 #### Commits
 To commit code changes: Run `yarn gitmoji -c` at the root directory and it will start an interactive tool to commit changes with readable messages.
+
+#### Pipelines
+
+- Validate api and client.
+
+![](https://drive.google.com/uc?id=1KOzRUmiywy3JCT30_f_jkg4g-qz-nYbZ)
+
+- Deploy to AWS.
+
+![](https://drive.google.com/uc?id=1IOrN6Rg0x1Kl-wkge_qkcbyeCkTE2ciK)
 
 #### End-to-end tests
 To run e2e tests: Run `yarn e2e` at the root directory.

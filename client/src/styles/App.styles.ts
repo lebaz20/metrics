@@ -35,5 +35,22 @@ const SubmitButton = styled.button`
 const ResponseContainer = styled.div`
   margin-top: 20px;
 `
+const ErrorMessage = styled.div`
+  color: red;
+  margin-top: -20px;
+  margin-bottom: 10px;
+  &::before {
+    content: '⚠️'; /* Content to be added before each paragraph */
+    padding-right: 8px; /* Add spacing between the character and the text */
+  }
+`
 
-export { Container, Form, Label, Input, SubmitButton, ResponseContainer }
+export {
+  Container,
+  Form,
+  Label,
+  Input,
+  SubmitButton,
+  ResponseContainer,
+  ErrorMessage,
+}
