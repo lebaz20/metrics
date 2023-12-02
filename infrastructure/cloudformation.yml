@@ -139,7 +139,6 @@ Resources:
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref MetricsApiGateway
-      StageName: prod
     DependsOn:
       - MetricsApiGateway
       - MetricsApiGatewayPOSTMethod
