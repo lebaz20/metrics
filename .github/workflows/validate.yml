@@ -34,34 +34,34 @@ jobs:
         run: npm install -g yarn
 
       - name: Install API dependencies
-        working-directory: src/api
+        working-directory: api
         run: yarn
       
       - name: Lint API
-        working-directory: src/api
+        working-directory: api
         run: yarn lint
 
       - name: Test API
-        working-directory: src/api
+        working-directory: api
         run: yarn test
       
       - name: Build API
-        working-directory: src/api
+        working-directory: api
         run: yarn build
 
       - name: Install Client dependencies
-        working-directory: src/client
+        working-directory: client
         run: yarn
       
       - name: Lint Client
-        working-directory: src/client
+        working-directory: client
         run: yarn lint
 
       - name: Test Client
-        working-directory: src/client
+        working-directory: client
         run: yarn test
       
       - name: Build Client
-        working-directory: src/client
+        working-directory: client
         run: yarn build
      
