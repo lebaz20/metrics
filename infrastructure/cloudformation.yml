@@ -303,6 +303,10 @@ Resources:
                   - !GetAtt MetricsMinTable.Arn
                   - !GetAtt MetricsHrTable.Arn
                   - !GetAtt MetricsDayTable.Arn
+              - Effect: Allow
+                Action:
+                  - timestream:DescribeEndpoints
+                Resource: "*"
     DependsOn:
       - MetricsRawKinesisStream
       - MetricsProcessedKinesisStream
