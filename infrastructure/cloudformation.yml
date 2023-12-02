@@ -240,7 +240,6 @@ Resources:
           LoggingLevel: INFO
           DataTraceEnabled: true
           MetricsEnabled: true
-          LogLevel: INFO
           CachingEnabled: false
     DependsOn:
       - MetricsApiGateway
