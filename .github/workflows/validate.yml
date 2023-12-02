@@ -57,13 +57,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout code
         uses: actions/checkout@v3
-        
-      - name: Change directory to root
-        run: |
-          pwd
-      - name: Change directory to root2
-        run: |
-          ls -al
 
       - name: Install Client dependencies
         working-directory: client

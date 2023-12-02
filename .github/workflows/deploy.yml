@@ -43,6 +43,10 @@ jobs:
     needs: prepare
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Build and upload API
         working-directory: .github/workflows
         run: ./deployAPI.sh
@@ -57,6 +61,10 @@ jobs:
     needs: prepare
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Build and upload Client
         working-directory: .github/workflows
         run: ./deployClient.sh
@@ -70,6 +78,10 @@ jobs:
     needs: [build_api, build_client]
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Run E2E Tests
         working-directory: .github/workflows
         run: ./runE2ETests.sh
@@ -80,6 +92,10 @@ jobs:
     needs: test_e2e
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Deploy CloudFormation Stack
         # You may pin to the exact commit or the version.
         # uses: aws-actions/aws-cloudformation-github-deploy@023f4ef60d0103d690f31a504cfda9f4f2d66265
