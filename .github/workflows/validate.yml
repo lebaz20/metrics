@@ -57,6 +57,8 @@ jobs:
       - name: Change directory to root
         run: |
           pwd
+      - name: Change directory to root2
+        run: |
           ls
 
       - name: Install Client dependencies
