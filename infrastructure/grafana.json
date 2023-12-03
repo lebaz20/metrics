@@ -1,0 +1,218 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 2,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "datasource": {
+          "type": "grafana-timestream-datasource",
+          "uid": "jtRnnQHIk"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green"
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 20,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 2,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "9.4.7",
+        "targets": [
+          {
+            "database": "\"MetricsTimestreamDB\"",
+            "datasource": {
+              "type": "grafana-timestream-datasource",
+              "uid": "jtRnnQHIk"
+            },
+            "hide": false,
+            "measure": "cpu",
+            "rawQuery": "SELECT measure_name AS name, \"measure_value::double\" AS value, time FROM $__database.metrics_$timestreamTable WHERE $__timeFilter",
+            "refId": "A",
+            "table": "\"metrics_raw\"",
+            "waitForResult": true
+          }
+        ],
+        "transformations": [
+          {
+            "disabled": true,
+            "id": "groupBy",
+            "options": {
+              "fields": {
+                "name": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                },
+                "time": {
+                  "aggregations": [
+                    "allValues"
+                  ],
+                  "operation": "aggregate"
+                },
+                "value": {
+                  "aggregations": [
+                    "mean"
+                  ],
+                  "operation": "aggregate"
+                }
+              }
+            }
+          },
+          {
+            "id": "partitionByValues",
+            "options": {
+              "fields": [
+                "name"
+              ]
+            }
+          }
+        ],
+        "type": "timeseries"
+      }
+    ],
+    "refresh": "",
+    "revision": 1,
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "raw",
+            "value": "raw"
+          },
+          "description": "Show all, average per min/ hr/ day.",
+          "hide": 0,
+          "includeAll": false,
+          "label": "Avg",
+          "multi": false,
+          "name": "timestreamTable",
+          "options": [
+            {
+              "selected": true,
+              "text": "raw",
+              "value": "raw"
+            },
+            {
+              "selected": false,
+              "text": "min",
+              "value": "min"
+            },
+            {
+              "selected": false,
+              "text": "hr",
+              "value": "hr"
+            },
+            {
+              "selected": false,
+              "text": "day",
+              "value": "day"
+            }
+          ],
+          "query": "raw, min, hr, day",
+          "queryValue": "",
+          "skipUrlSync": false,
+          "type": "custom"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-5m",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Metrics",
+    "uid": "8fthVwNIz",
+    "version": 8,
+    "weekStart": ""
+  }

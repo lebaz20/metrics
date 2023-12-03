@@ -52,11 +52,13 @@ The Frontend needed to insert metrics
 
 For more info check: [Client README](./../src/client/README.md).
 
-![](https://drive.google.com/uc?id=1mPzUe8-eJCg0tQ6z7MOxwdl1UG7DDPgg)
-
 ![](https://drive.google.com/uc?id=15DY5L8Zh5qNPilUycN0Lxy166PsYT1KO)
 
-![](https://drive.google.com/uc?id=1YJYpq0ceTPsSt_lQXwUQnnHfdBOQ2PmK)
+![](https://drive.google.com/uc?id=1OIdxZl3vYLACnBUWHNx7-qDp9zV7SvA1)
+
+To Setup Visualization, Use [Grafana Model](./../infrastructure/grafana.json) in a Grafana instance connected to AWS Timestream.
+
+![](https://drive.google.com/uc?id=11lHkDr-R9pwdJXBk46UYLeMUsy1Eg60_)
 
 ### Deployment
 #### Stack
